@@ -3,3 +3,4 @@
 .settings/
 .tern-project
 build/*
+WebContent/WEB-INF/lib/*
