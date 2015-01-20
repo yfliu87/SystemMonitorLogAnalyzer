@@ -1,0 +1,8 @@
+logs
+/home/web-dev/Documents/eclipse-javaee/LogIndexer/logs
+
+feature
+/home/web-dev/Documents/eclipse-javaee/LogIndexer/featureMapping
+
+index
+/home/web-dev/Documents/eclipse-javaee/LogIndexer/logIndex

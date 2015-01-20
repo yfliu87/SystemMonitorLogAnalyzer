@@ -14,6 +14,9 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="/home/web-dev/Documents/lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/logIndexer.jar"/>
+	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/lucene-analyzers-common-4.10.2.jar"/>
+	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/lucene-core-4.10.2.jar"/>
+	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/lucene-queryparser-4.10.2.jar" sourcepath="/home/web-dev/.m2/repository/org/apache/lucene/lucene-queryparser/4.10.2/lucene-queryparser-4.10.2-sources.jar"/>
+	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/poi-3.11.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

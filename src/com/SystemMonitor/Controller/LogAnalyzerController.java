@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.SystemMonitor.Indexer.LogIndexer;
 import com.SystemMonitor.Model.SystemMonitorQuery;
+import com.SystemMonitor.Util.ConfigHelper;
 import com.SystemMonitor.Util.DateHelper;
 
 @Controller
@@ -20,12 +21,11 @@ public class LogAnalyzerController {
 	private LogIndexer _indexer;
 	private String _logFilePath;
 	private int _jobSize;
-	private String _configFilePath = "/home/yifei/Documents/java-project/scheduleTask/config.txt";
+	private String _configFilePath = "/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/config.txt";
 
 	@RequestMapping(value="/logAnalyzer",method=RequestMethod.GET)
 	public String logAnalyzerHandler(Model model){
-		
-		System.out.println("LogAnalyzerController.queryHandler");
+		init();
 		
 		model.addAttribute(new SystemMonitorQuery());
 		return "showLogAnalyzer";
@@ -33,25 +33,19 @@ public class LogAnalyzerController {
 	
 	@RequestMapping(value="/logAnalyzer", method=RequestMethod.POST)
 	public String queryLogHandler(SystemMonitorQuery queryCondition, Model resultModel){
-		
 		List<String> result = new ArrayList<String>();
-		result.add("Saturday");
-		result.add("sunday");
-		resultModel.addAttribute("result", result);
-		/*
-		 * query conditions are stored in queryCondition variable
-		 */
-	/*	try {
+		
+		try {
 			result = this.searchByQuery(queryCondition);
 			resultModel.addAttribute("result", result);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	*/	
+		
 		return "queryResult";
 	}
 
-	/*private void init(){
+	private void init(){
 		ConfigHelper config = ConfigHelper.getInstance(_configFilePath);
 
 		String logFilePath = config.getLogLocation();
@@ -66,7 +60,7 @@ public class LogAnalyzerController {
 
 		_jobSize = getJobSize();
 	}
-	*/
+	
 	
 	private int getJobSize(){
 		File fileFolder = new File(this._logFilePath);
@@ -122,8 +116,6 @@ public class LogAnalyzerController {
 	}
 
 	public List<String> searchByQuery(SystemMonitorQuery query) throws IOException {
-		System.out.println("searchQuery");
-		
 		String toolName = query.getToolString();
 		String startDate = query.getJobStartDate();
 		String stopDate = query.getJobStopDate();
@@ -131,11 +123,11 @@ public class LogAnalyzerController {
 		List<String> features = query.getFeatures();
 		List<String> retList = null;
 
-		if (toolName != null){
+		if (!toolName.isEmpty()){
 			retList = this.searchToolUsage(toolName); 
 		}
 		
-		if (startDate != null && stopDate == null){
+		if (!startDate.isEmpty() && stopDate.isEmpty()){
 			List<String> startList = this.searchJobByDate(startDate);
 			
 			if (retList == null)
@@ -144,7 +136,7 @@ public class LogAnalyzerController {
 				retList.retainAll(startList);
 		}
 
-		if (startDate == null && stopDate != null) {
+		if (startDate.isEmpty() && !stopDate.isEmpty()) {
 			List<String> stopList = this.searchJobByDate(stopDate);
 			
 			if (retList == null)
@@ -153,7 +145,7 @@ public class LogAnalyzerController {
 				retList.retainAll(stopList);
 		}
 		
-		if (startDate != null && stopDate != null){
+		if (!startDate.isEmpty() && !stopDate.isEmpty()){
 			List<String> durationList = this.searchJobByTimeRange(startDate, stopDate);
 			
 			if (retList == null)
