@@ -2,7 +2,6 @@ package com.SystemMonitor.LogParser;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
@@ -20,6 +19,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import com.SystemMonitor.Model.JobInfo;
 import com.SystemMonitor.Model.SystemMonitorException;
 import com.SystemMonitor.Util.DateHelper;
 
@@ -41,6 +41,7 @@ public class EXCELParser implements Runnable{
 
 			HSSFSheet sheet = workbook.getSheetAt(0);
 			Calendar jobStartDate = null, jobStopDate = null;
+			JobInfo info = new JobInfo();
 
 			Map<String, Set<String>> featureUsage = new HashMap<String, Set<String>>();
 
@@ -53,8 +54,10 @@ public class EXCELParser implements Runnable{
 
 				updateFeature(row, featureUsage);
 
-				if (row.getRowNum() == sheet.getFirstRowNum() + 1)
+				if (row.getRowNum() == sheet.getFirstRowNum() + 1){
 					jobStartDate = readDateInfo(row);
+					updateJobInfo(row, info);
+				}
 
 				if (row.getRowNum() == sheet.getLastRowNum())
 					jobStopDate = readDateInfo(row);
@@ -63,15 +66,43 @@ public class EXCELParser implements Runnable{
 			// feature component mapping
 			Set<String> featureFound = detectFeature(featureUsage);
 
-			updateSummary(workbook, _file, jobStartDate, jobStopDate, featureFound);
+			updateSummary(workbook, _file, info, jobStartDate, jobStopDate, featureFound);
 		} catch (Exception e) {
 			SystemMonitorException.recordException(e.getMessage());
 		} finally {
 			closeWorkbook(workbook);
 		}
 	}
-
 	
+	private void updateJobInfo(Row row, JobInfo info) {
+		Cell cell = row.getCell(LogColumnDefinition.CONTEXT.ordinal());
+		
+		if (cell != null){
+			String context = cell.getStringCellValue();
+			String[] content = context.split(";");
+			
+			for (String msg : content){
+				int idx = msg.lastIndexOf("=");
+
+				if (msg.startsWith("JobName")){
+					info.setJobName(msg.substring(idx, msg.length()));
+				}else if (msg.startsWith("WellName")){
+					info.setWellName(msg.substring(idx, msg.length()));
+				}else if (msg.startsWith("ClientName")){
+					info.setClientName(msg.substring(idx, msg.length()));
+				}else if (msg.startsWith("Workflow")){
+					info.setWorkflow(msg.substring(idx, msg.length()));
+				}else if (msg.startsWith("Simulator")){
+					info.setSimulator(msg.substring(idx, msg.length()).equals("true"));
+				}else if (msg.startsWith("UnitSystem")){
+					info.setUnitSystem(msg.substring(idx, msg.length()));
+				}else if (msg.startsWith("JobSize")){
+					info.setJobSize(Double.parseDouble(msg.substring(idx, msg.length())));
+				}
+			}
+		}
+	}
+
 	private Calendar readDateInfo(Row row) {
 		Cell cell = row.getCell(LogColumnDefinition.TIME.ordinal());
 		
@@ -131,7 +162,7 @@ public class EXCELParser implements Runnable{
 		}
 	}
 
-	private void updateSummary(HSSFWorkbook workbook, File subfile,
+	private void updateSummary(HSSFWorkbook workbook, File subfile, JobInfo info,
 			Calendar jobStartDate, Calendar jobStopDate,
 			Set<String> featureFound) {
 
@@ -144,6 +175,7 @@ public class EXCELParser implements Runnable{
 		int rowToBeAdded = 0;
 		updateJobStartDate(newSheet, jobStartDate, rowToBeAdded++);
 		updateJobDuration(newSheet, jobStartDate, jobStopDate, rowToBeAdded++);
+		updateJobinfo(newSheet, info, rowToBeAdded);
 
 		if ((sheetIndex = workbook.getSheetIndex("feature summary")) != -1){
 			workbook.removeSheetAt(sheetIndex);
@@ -167,6 +199,33 @@ public class EXCELParser implements Runnable{
 				}
 			}
 		}
+	}
+
+	private void updateJobinfo(Sheet newSheet, JobInfo info, int rowIndex) {
+		
+		Row newRow = newSheet.createRow(rowIndex++);
+		Cell newCell = newRow.createCell(0, Cell.CELL_TYPE_STRING);
+		newCell.setCellValue(info.getJobName());
+		
+		newRow = newSheet.createRow(rowIndex++);
+		newCell = newRow.createCell(0, Cell.CELL_TYPE_STRING);
+		newCell.setCellValue(info.getWellName());
+
+		newRow = newSheet.createRow(rowIndex++);
+		newCell = newRow.createCell(0, Cell.CELL_TYPE_STRING);
+		newCell.setCellValue(info.getClientName());
+
+		newRow = newSheet.createRow(rowIndex++);
+		newCell = newRow.createCell(0, Cell.CELL_TYPE_STRING);
+		newCell.setCellValue(info.getWorkflow());
+
+		newRow = newSheet.createRow(rowIndex++);
+		newCell = newRow.createCell(0, Cell.CELL_TYPE_STRING);
+		newCell.setCellValue(info.getUnitSystem());
+
+		newRow = newSheet.createRow(rowIndex++);
+		newCell = newRow.createCell(0, Cell.CELL_TYPE_NUMERIC);
+		newCell.setCellValue(info.getJobSize());
 	}
 
 	private void updateJobDuration(Sheet newSheet, Calendar jobStartDate, Calendar jobStopDate, int rowIndex) {
