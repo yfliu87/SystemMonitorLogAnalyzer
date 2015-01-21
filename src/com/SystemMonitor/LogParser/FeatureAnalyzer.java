@@ -23,6 +23,8 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
+import com.SystemMonitor.Model.SystemMonitorException;
+
 public class FeatureAnalyzer {
 	private Map<String, Set<String>> _featureComponentMapping;
 	private Map<String, Set<String>> _componentFeatureMapping;
@@ -64,13 +66,13 @@ public class FeatureAnalyzer {
 				}
 			}
 		}catch (IOException e){
-			e.printStackTrace();
+			SystemMonitorException.recordException(e.getMessage());
 		}finally{
 			if (workbook != null) {
 				try {
 					workbook.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					SystemMonitorException.recordException(e.getMessage());
 				}
 			}
 		}

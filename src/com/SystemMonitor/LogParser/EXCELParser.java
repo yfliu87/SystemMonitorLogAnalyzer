@@ -20,6 +20,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import com.SystemMonitor.Model.SystemMonitorException;
 import com.SystemMonitor.Util.DateHelper;
 
 public class EXCELParser implements Runnable{
@@ -33,8 +34,6 @@ public class EXCELParser implements Runnable{
 
 	@Override
 	public void run() {
-		System.out.println("EXCEL Parser Thread: " + Thread.currentThread().getName() + Thread.currentThread().getId());
-		
 		HSSFWorkbook workbook = null;
 		try{
 			POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(this._file));
@@ -66,7 +65,7 @@ public class EXCELParser implements Runnable{
 
 			updateSummary(workbook, _file, jobStartDate, jobStopDate, featureFound);
 		} catch (Exception e) {
-			e.printStackTrace();
+			SystemMonitorException.recordException(e.getMessage());
 		} finally {
 			closeWorkbook(workbook);
 		}
@@ -134,7 +133,7 @@ public class EXCELParser implements Runnable{
 
 	private void updateSummary(HSSFWorkbook workbook, File subfile,
 			Calendar jobStartDate, Calendar jobStopDate,
-			Set<String> featureFound) throws FileNotFoundException, IOException {
+			Set<String> featureFound) {
 
 		int sheetIndex = 0;
 		if ((sheetIndex = workbook.getSheetIndex("job summary")) != -1){
@@ -157,12 +156,14 @@ public class EXCELParser implements Runnable{
 		try {
 			fileOut = new FileOutputStream(subfile);
 			workbook.write(fileOut);
+		}catch(Exception e){
+			SystemMonitorException.recordException(e.getMessage());
 		} finally {
 			if (fileOut != null) {
 				try {
 					fileOut.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					SystemMonitorException.recordException(e.getMessage());
 				}
 			}
 		}
@@ -201,7 +202,7 @@ public class EXCELParser implements Runnable{
 			try {
 				workbook.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				SystemMonitorException.recordException(e.getMessage());
 			}
 		}
 	}

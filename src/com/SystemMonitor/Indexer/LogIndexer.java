@@ -38,6 +38,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 
 import com.SystemMonitor.LogParser.ParserWrapper;
+import com.SystemMonitor.Model.SystemMonitorException;
 
 public class LogIndexer{
 	private Directory _logIndexDirectory;
@@ -62,10 +63,8 @@ public class LogIndexer{
 			Query query = parser.parse(keyword);
 			TopDocs td = _idxSearcher.search(query, 3);
 			sds = td.scoreDocs; 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			SystemMonitorException.recordException(e.getMessage());
 		}finally{
 		}
 		return sds;

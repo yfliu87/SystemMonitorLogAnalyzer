@@ -9,6 +9,8 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.SystemMonitor.Model.SystemMonitorException;
+
 /*
  * This class is designed for reading config files which includes below info:
  * 1. feature mapping config file location
@@ -39,7 +41,7 @@ public class ConfigHelper {
 						}
 					}
 			} catch (IOException e) {
-				e.printStackTrace();
+				SystemMonitorException.recordException(e.getMessage());
 			}finally{
 				closeResource(bReader);
 				closeResource(isReader);
@@ -60,7 +62,7 @@ public class ConfigHelper {
 			try {
 				reader.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				SystemMonitorException.recordException(e.getMessage());
 			}
 		}
 	}

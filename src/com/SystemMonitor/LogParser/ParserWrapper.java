@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -28,6 +27,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Row;
+
+import com.SystemMonitor.Model.SystemMonitorException;
 
 public class ParserWrapper {
 	private FeatureAnalyzer _featureAnalyzer;
@@ -86,7 +87,7 @@ public class ParserWrapper {
 				return row.getCell(0).getStringCellValue();
 			}
 		}catch (IOException e){
-			e.printStackTrace();
+			SystemMonitorException.recordException(e.getMessage());
 		}finally{
 			closeWorkbook(workbook);
 		}
@@ -109,7 +110,7 @@ public class ParserWrapper {
 				ret.add(row.getCell(0).getStringCellValue());
 			}
 		}catch (IOException e){
-			e.printStackTrace();
+			SystemMonitorException.recordException(e.getMessage());
 		}finally{
 			closeWorkbook(workbook);
 		}

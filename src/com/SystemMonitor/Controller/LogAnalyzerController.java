@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.SystemMonitor.Indexer.LogIndexer;
+import com.SystemMonitor.Model.SystemMonitorException;
 import com.SystemMonitor.Model.SystemMonitorQuery;
 import com.SystemMonitor.Util.ConfigHelper;
 import com.SystemMonitor.Util.DateHelper;
@@ -21,7 +22,7 @@ public class LogAnalyzerController {
 	private LogIndexer _indexer;
 	private String _logFilePath;
 	private int _jobSize;
-	private String _configFilePath = "/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/config.txt";
+	private String _configFilePath = "/home/yifei/Documents/java-project/WebLogAnalyzer/config.txt";
 
 	@RequestMapping(value="/logAnalyzer",method=RequestMethod.GET)
 	public String logAnalyzerHandler(Model model){
@@ -39,7 +40,7 @@ public class LogAnalyzerController {
 			result = this.searchByQuery(queryCondition);
 			resultModel.addAttribute("result", result);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SystemMonitorException.recordException(e.getMessage());
 		}
 		
 		return "queryResult";
@@ -55,7 +56,7 @@ public class LogAnalyzerController {
 		try {
 			_indexer = new LogIndexer(logFilePath, indexFilePath);
 		} catch (IOException e) {
-			e.printStackTrace();
+			SystemMonitorException.recordException(e.getMessage());
 		}
 
 		_jobSize = getJobSize();
