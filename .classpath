@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-7-sun">
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre-7-sun">
 		<attributes>
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
@@ -13,10 +13,10 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="/home/web-dev/Documents/lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/lucene-analyzers-common-4.10.2.jar"/>
-	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/lucene-core-4.10.2.jar"/>
-	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/lucene-queryparser-4.10.2.jar" sourcepath="/home/web-dev/.m2/repository/org/apache/lucene/lucene-queryparser/4.10.2/lucene-queryparser-4.10.2-sources.jar"/>
-	<classpathentry kind="lib" path="/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/lib/poi-3.11.jar"/>
+	<classpathentry kind="lib" path="/home/yifei/Documents/java-project/WebLogAnalyzer/lib/lucene-analyzers-common-4.10.2.jar"/>
+	<classpathentry kind="lib" path="/home/yifei/Documents/java-project/WebLogAnalyzer/lib/lucene-core-4.10.2.jar"/>
+	<classpathentry kind="lib" path="/home/yifei/Documents/java-project/WebLogAnalyzer/lib/lucene-queryparser-4.10.2.jar"/>
+	<classpathentry kind="lib" path="/home/yifei/Documents/java-project/WebLogAnalyzer/lib/poi-ooxml-3.11.jar"/>
+	<classpathentry kind="lib" path="/home/yifei/Documents/java-project/WebLogAnalyzer/lib/poi-3.11.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

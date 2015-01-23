@@ -9,19 +9,16 @@ package com.SystemMonitor.LogParser;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 
 import com.SystemMonitor.Model.SystemMonitorException;
 
@@ -40,23 +37,25 @@ public class FeatureAnalyzer {
 	}
 	
 	private void init(){
-		HSSFWorkbook workbook = null;
+		XSSFWorkbook workbook = null;
 		File file = new File(_featureMappingFile);
 		File[] configFiles = file.listFiles();
 		try{
 			for (File configFile : configFiles){
-				POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(configFile));
-				workbook = new HSSFWorkbook(fs);
+				//POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(configFile));
+//				workbook = new HSSFWorkbook(fs);
 			
+				workbook = new XSSFWorkbook(configFile.getAbsolutePath());
 				int sheetNumber = 0;
 				while (sheetNumber < workbook.getNumberOfSheets()) {
-					HSSFSheet sheet = workbook.getSheetAt(sheetNumber);
+					XSSFSheet sheet = workbook.getSheetAt(sheetNumber);
 
 					String featureName = sheet.getSheetName();
 
-					for (Iterator<Row> iterRow = (Iterator<Row>) sheet.rowIterator(); iterRow.hasNext();) {
-						Row row = iterRow.next();
-						Cell cell = row.getCell(0);
+					for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++){
+				//	for (Iterator<Row> iterRow = (Iterator<Row>) sheet.rowIterator(); iterRow.hasNext();) {
+						XSSFRow row = sheet.getRow(rowIndex);
+						XSSFCell cell = row.getCell(0);
 						String componentName = cell.getStringCellValue();
 
 						updateFeatureComponentMapping(featureName, componentName);

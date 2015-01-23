@@ -11,10 +11,8 @@ package com.SystemMonitor.LogParser;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,11 +21,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Row;
-
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import com.SystemMonitor.Model.SystemMonitorException;
 
 public class ParserWrapper {
@@ -74,15 +70,13 @@ public class ParserWrapper {
 	}
 
 	public String getJobStartDate(File file) {		
-		HSSFWorkbook workbook = null;
+		XSSFWorkbook workbook = null;
 		try{
-			POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(file));
-			workbook = new HSSFWorkbook(fs);
-		
-			HSSFSheet sheet = workbook.getSheet("job summary");
+			workbook = new XSSFWorkbook(file.getAbsolutePath());
+			XSSFSheet sheet = workbook.getSheet("job summary");
 
-			for (Iterator<Row> iterRow = (Iterator<Row>) sheet.rowIterator(); iterRow.hasNext();) {
-				Row row = iterRow.next();
+			for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++){
+				XSSFRow row = sheet.getRow(rowIndex);
 
 				return row.getCell(0).getStringCellValue();
 			}
@@ -95,17 +89,15 @@ public class ParserWrapper {
 	}
 	
 	public List<String> getFeatures(File file) {
-		HSSFWorkbook workbook = null;
+		XSSFWorkbook workbook = null;
 		List<String> ret = new ArrayList<String>();
 		
 		try{
-			POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(file));
-			workbook = new HSSFWorkbook(fs);
-		
-			HSSFSheet sheet = workbook.getSheet("feature summary");
+			workbook = new XSSFWorkbook(file.getAbsolutePath());
+			XSSFSheet sheet = workbook.getSheet("feature summary");
 
-			for (Iterator<Row> iterRow = (Iterator<Row>) sheet.rowIterator(); iterRow.hasNext();) {
-				Row row = iterRow.next();
+			for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++){
+				XSSFRow row = sheet.getRow(rowIndex);
 
 				ret.add(row.getCell(0).getStringCellValue());
 			}
@@ -117,7 +109,7 @@ public class ParserWrapper {
 		return ret;
 	}
 	
-	private void closeWorkbook(HSSFWorkbook workbook){
+	private void closeWorkbook(XSSFWorkbook workbook){
 		if (workbook != null){
 			try {
 				workbook.close();
