@@ -1,8 +1,8 @@
 logs
-/home/web-dev/Documents/eclipse-javaee/LogIndexer/logs
+/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/logs
 
 feature
-/home/web-dev/Documents/eclipse-javaee/LogIndexer/featureMapping
+/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/featureMapping
 
 index
-/home/web-dev/Documents/eclipse-javaee/LogIndexer/logIndex
+/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/logIndex

@@ -16,7 +16,6 @@
 		<property name="suffix" value=".jsp" />
 	</bean>
 	
-	<mvc:resources location="/WEB-INF/pages/" mapping="/pages/**"/>
 	<mvc:annotation-driven/>
 	
 	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">

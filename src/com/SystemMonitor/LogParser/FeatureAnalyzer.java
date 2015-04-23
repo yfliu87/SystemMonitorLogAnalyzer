@@ -9,18 +9,21 @@ package com.SystemMonitor.LogParser;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 
-import com.SystemMonitor.Model.SystemMonitorException;
+import com.SystemMonitor.Util.SystemMonitorException;
 
 public class FeatureAnalyzer {
 	private Map<String, Set<String>> _featureComponentMapping;
@@ -37,25 +40,23 @@ public class FeatureAnalyzer {
 	}
 	
 	private void init(){
-		XSSFWorkbook workbook = null;
+		HSSFWorkbook workbook = null;
 		File file = new File(_featureMappingFile);
 		File[] configFiles = file.listFiles();
 		try{
 			for (File configFile : configFiles){
-				//POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(configFile));
-//				workbook = new HSSFWorkbook(fs);
-			
-				workbook = new XSSFWorkbook(configFile.getAbsolutePath());
+				POIFSFileSystem fs = new POIFSFileSystem(new FileInputStream(configFile));
+				workbook = new HSSFWorkbook(fs);
+
 				int sheetNumber = 0;
 				while (sheetNumber < workbook.getNumberOfSheets()) {
-					XSSFSheet sheet = workbook.getSheetAt(sheetNumber);
+					HSSFSheet sheet = workbook.getSheetAt(sheetNumber);
 
 					String featureName = sheet.getSheetName();
 
-					for (int rowIndex = 0; rowIndex < sheet.getLastRowNum(); rowIndex++){
-				//	for (Iterator<Row> iterRow = (Iterator<Row>) sheet.rowIterator(); iterRow.hasNext();) {
-						XSSFRow row = sheet.getRow(rowIndex);
-						XSSFCell cell = row.getCell(0);
+					for (Iterator<Row> iterRow = (Iterator<Row>)sheet.rowIterator(); iterRow.hasNext();){
+						Row row = iterRow.next();
+						Cell cell = row.getCell(0);
 						String componentName = cell.getStringCellValue();
 
 						updateFeatureComponentMapping(featureName, componentName);
@@ -65,14 +66,18 @@ public class FeatureAnalyzer {
 				}
 			}
 		}catch (IOException e){
-			SystemMonitorException.recordException(e.getMessage());
+			SystemMonitorException.logException(Thread.currentThread(), e);
 		}finally{
-			if (workbook != null) {
-				try {
-					workbook.close();
-				} catch (IOException e) {
-					SystemMonitorException.recordException(e.getMessage());
-				}
+			closeWorkbook(workbook);
+		}
+	}
+	
+	private void closeWorkbook(HSSFWorkbook workbook){
+		if (workbook != null) {
+			try {
+				workbook.close();
+			} catch (IOException e) {
+				SystemMonitorException.logException(Thread.currentThread(), e);
 			}
 		}
 	}

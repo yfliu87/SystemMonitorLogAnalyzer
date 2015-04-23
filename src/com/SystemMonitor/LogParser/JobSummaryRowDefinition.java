@@ -1,0 +1,17 @@
+package com.SystemMonitor.LogParser;
+
+public enum JobSummaryRowDefinition {
+
+	MWVERSION,
+	PATCHVERSION,
+	JOB_NAME,
+	WELL_NAME,
+	CLIENT_NAME,
+	WORKFLOW,
+	UNITSYSTEM,
+	STARTDATE,
+	STOPDATE,
+	DURATION,
+	JOBSIZE,
+	CRASHED
+}
