@@ -8,7 +8,7 @@ import com.SystemMonitor.Util.SystemMonitorException;
 public class Program {
 
 	public static void main(String[] args) {
-		ConfigHelper config = ConfigHelper.getInstance("/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/config.txt");
+		ConfigHelper config = ConfigHelper.getInstance("D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\config.txt");
 		
 		String logFilePath = config.getLogLocation();
 		String featureMappingFilePath = config.getFeatureMappingFileLocation();
@@ -16,16 +16,16 @@ public class Program {
 		try{
 			ParserWrapper csvParser = new ParserWrapper(logFilePath, featureMappingFilePath);
 //			csvParser.parseCSV_multithread();
-			csvParser.filterTargetJobByType("D&M");
-			System.out.println("filter done");
+//			csvParser.filterTargetJobByType("D&M");
+//			System.out.println("filter done");
 //			
-//			csvParser.parseCSV_singlethread();
+			csvParser.parseCSV_singlethread();
 //			
-//			String indexFilePath = config.getIndexLocation();
-//			LogIndexer indexer = new LogIndexer(logFilePath, indexFilePath, csvParser);
+			String indexFilePath = config.getIndexLocation();
+			LogIndexer indexer = new LogIndexer(logFilePath, indexFilePath, csvParser);
 //			
-//			indexer.index();
-//			System.out.println("index finished");
+			indexer.index();
+			System.out.println("index finished");
 		}catch(Exception e){
 			SystemMonitorException.logException(Thread.currentThread(), e);
 		}

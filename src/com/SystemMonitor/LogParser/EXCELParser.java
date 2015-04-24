@@ -78,6 +78,7 @@ public class EXCELParser implements Runnable{
 				if (isNewJob && jobStop(row)){
 					jobStopDate = readDateInfo(row);
 					jobInfo.setJobStopDate(jobStopDate);
+					jobInfo.setJobDuration(this.getJobDuration(jobInfo.getJobStartDate(), jobInfo.getJobStopDate()));
 
 					Set<String> featureFound = detectFeature(featureUsage);
 					updateJobInfo(jobInfo, jobs, featureFound, featureUsages, tools, toolsList);
@@ -110,8 +111,14 @@ public class EXCELParser implements Runnable{
 		jobInfo.setCrashed(true);
 		
 		Cell cell = row.getCell(LogColumnDefinition.PROCESS.ordinal());
-		if (cell != null)
-			jobInfo.updateCrashProcess(cell.getStringCellValue());
+		if (cell != null){
+			String crashProcess = cell.getStringCellValue();
+			
+			if (crashProcess.startsWith("Rig Floor") && crashProcess.contains("-"))
+				crashProcess = crashProcess.substring(0, crashProcess.lastIndexOf("-") - 1);
+			
+			jobInfo.updateCrashProcess(crashProcess);
+		}
 		else
 			jobInfo.updateCrashProcess("unknown");
 	}
@@ -122,7 +129,7 @@ public class EXCELParser implements Runnable{
 		
 		if (_filterJobName.contains(jobInfo.getJobName()) || jobInfo.isSimulation() ||
 				(jobInfo.getWorkflow().equals("D&M") && (jobInfo.getJobDuration() < 1.0 || jobInfo.getJobDuration() > 2500.0)) ||
-				(jobInfo.getWorkflow().equals("Wireline") && (jobInfo.getJobDuration() < 1.0 && jobInfo.getJobDuration() > 400.0)))
+				(jobInfo.getWorkflow().equals("Wireline") && (jobInfo.getJobDuration() < 1.0 || jobInfo.getJobDuration() > 400.0)))
 			return;
 			
 		jobs.add(jobInfo);
