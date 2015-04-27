@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -91,38 +92,16 @@ public class LogAnalyzerController {
 	
 	private void addMoreIndex(List<JobInformation> result, HttpServletRequest request) {
 		//map<month, map<process, crash_count>>
-		HashMap<String, HashMap<String, Integer>> processMonthlyCrash = new HashMap<String, HashMap<String, Integer>>();
-
-		for (JobInformation job : result){
-			List<String> processes = job.getCrashProcess();
-			
-			String formatDate = DateHelper.getYearMonthFormat(job.getJobStartDate());
-			//map<process, crash_count>
-			HashMap<String, Integer> processCrashCount = new HashMap<String, Integer>();
-			
-			for (String process : processes){
-				if (processCrashCount.containsKey(process))
-					processCrashCount.put(process, processCrashCount.get(process) + 1);
-				else
-					processCrashCount.put(process, 1);
-			}
-			merge(formatDate, processCrashCount, processMonthlyCrash);
-		}
+		HashMap<String, HashMap<String, Integer>> processMonthlyCrash = GetProcessMonthlyCrash(result);
 		
+		List<Map.Entry<String, HashMap<String, Integer>>> info = OrderByMonth(processMonthlyCrash);
+				
 		String months = "";
 		String monthCount = "";
+		int paddingZeroCount = 0;
+
 		//map<prcess, crash_count>
 		HashMap<String, String> consoleCrashCount = new HashMap<String, String>();
-		
-		List<Map.Entry<String, HashMap<String, Integer>>> info = 
-				new ArrayList<Map.Entry<String, HashMap<String, Integer>>>(processMonthlyCrash.entrySet());
-		
-		Collections.sort(info, new Comparator<Map.Entry<String, HashMap<String, Integer>>>(){
-			public int compare(Map.Entry<String, HashMap<String, Integer>> o1, Map.Entry<String, HashMap<String, Integer>> o2){
-				return o1.getKey().compareTo(o2.getKey());
-			}
-		});
-		int paddingZeroCount = 0;
 		for (Map.Entry<String, HashMap<String, Integer>> crash: info){
 			String month = crash.getKey();
 			months += month + ",";
@@ -138,33 +117,31 @@ public class LogAnalyzerController {
 				if (consoleCrashCount.containsKey(process)){
 					String previousValue = consoleCrashCount.get(process);
 					
-					int current = previousValue.substring(0, previousValue.lastIndexOf(",")).split(",").length;
-					int zeroDiffCount = paddingZeroCount - current;
-					
-					while(zeroDiffCount > 0){
-						previousValue += 0 + ",";
-						--zeroDiffCount;
-					}
-					
-					previousValue += crashNumber + ",";
-					consoleCrashCount.put(process, previousValue);
+					consoleCrashCount.put(process, refreshValue(previousValue, paddingZeroCount, crashNumber, true));
 				}else{
-					String value = "";
-					
-					for (int i = 0; i < paddingZeroCount; i++){
-						value += 0 + ",";
-					}
-					value += crashNumber + ",";
-					consoleCrashCount.put(process, value);
+					consoleCrashCount.put(process, refreshValue("", paddingZeroCount, crashNumber, false));
 				}
 			}
 			monthCount += count + ",";
 			++paddingZeroCount;
 		}
-		
+		monthCount = monthCount.substring(0, monthCount.lastIndexOf(","));
 		months = months.substring(0, months.lastIndexOf(","));
+
 		int totalMonth = months.split(",").length;
 		
+		//build monthly crash number for each process
+		String detailInfo = BuildMontlyCrashDetail(consoleCrashCount, totalMonth);
+
+		String monthsWithProcessHeader = "Process," + months;
+		
+		request.setAttribute("month", months);
+		request.setAttribute("monthWithProcessHeader", monthsWithProcessHeader);
+		request.setAttribute("monthCount", monthCount);
+		request.setAttribute("monthDetail", detailInfo);
+	}
+	
+	private String BuildMontlyCrashDetail(HashMap<String, String> consoleCrashCount, int totalMonth ) {
 		String detailInfo = "";
 		for (String process : consoleCrashCount.keySet()){
 			String number = consoleCrashCount.get(process);
@@ -175,21 +152,61 @@ public class LogAnalyzerController {
 					number += "0" + ",";
 					diff--;
 				}
-				
 			}
 			detailInfo += process + "," + number.substring(0, number.lastIndexOf(",")) + ";";
 		}
-		monthCount = monthCount.substring(0, monthCount.lastIndexOf(","));
-		detailInfo = detailInfo.substring(0, detailInfo.lastIndexOf(";"));
-
-		String monthsWithProcessHeader = "Process," + months;
-		
-		request.setAttribute("month", months);
-		request.setAttribute("monthWithProcessHeader", monthsWithProcessHeader);
-		request.setAttribute("monthCount", monthCount);
-		request.setAttribute("monthDetail", detailInfo);
+		return detailInfo.substring(0, detailInfo.lastIndexOf(";"));
 	}
-	
+
+	private String refreshValue(String previousValue, int paddingZeroCount, int crashNumber, boolean withZeroDiffCount) {
+		if (withZeroDiffCount){
+			int current = previousValue.substring(0, previousValue.lastIndexOf(",")).split(",").length;
+			paddingZeroCount = paddingZeroCount - current;
+		}
+		
+		while(paddingZeroCount > 0){
+			previousValue += 0 + ",";
+			--paddingZeroCount;
+		}
+		
+		previousValue += crashNumber + ",";
+		return previousValue;
+	}
+
+	private List<Entry<String, HashMap<String, Integer>>> OrderByMonth(
+			HashMap<String, HashMap<String, Integer>> processMonthlyCrash) {
+		List<Entry<String, HashMap<String, Integer>>> ret = 
+				new ArrayList<Map.Entry<String, HashMap<String, Integer>>>(processMonthlyCrash.entrySet());
+		
+		Collections.sort(ret, new Comparator<Map.Entry<String, HashMap<String, Integer>>>(){
+			public int compare(Map.Entry<String, HashMap<String, Integer>> o1, Map.Entry<String, HashMap<String, Integer>> o2){
+				return o1.getKey().compareTo(o2.getKey());
+			}
+		});
+		return ret;
+	}
+
+	private HashMap<String, HashMap<String, Integer>> GetProcessMonthlyCrash(List<JobInformation> result) {
+		HashMap<String, HashMap<String, Integer>> ret = new HashMap<String, HashMap<String, Integer>>();
+
+		for (JobInformation job : result){
+			List<String> processes = job.getCrashProcess();
+			
+			String formatDate = DateHelper.getYearMonthFormat(job.getJobStartDate());
+			//map<process, crash_count>
+			HashMap<String, Integer> processCrashCount = new HashMap<String, Integer>();
+			
+			for (String process : processes){
+				if (processCrashCount.containsKey(process))
+					processCrashCount.put(process, processCrashCount.get(process) + 1);
+				else
+					processCrashCount.put(process, 1);
+			}
+			merge(formatDate, processCrashCount, ret);
+		}
+		return ret;
+	}
+
 	private void merge(String date, HashMap<String, Integer> candidateCrash,HashMap<String, HashMap<String, Integer>> processMonthlyCrash ){
 		if (!processMonthlyCrash.containsKey(date)){
 			processMonthlyCrash.put(date, candidateCrash);
