@@ -150,14 +150,12 @@ public class LogAnalyzerController {
 					
 					previousValue += crashNumber + ",";
 					consoleCrashCount.put(process, previousValue);
-					//consoleCrashCount.put(process, consoleCrashCount.get(process) + crashNumber +",");
 				}else{
 					String value = "";
 					
 					for (int i = 0; i < paddingZeroCount; i++){
 						value += 0 + ",";
 					}
-					//consoleCrashCount.put(process, "" + crashNumber + ",");
 					value += crashNumber + ",";
 					consoleCrashCount.put(process, value);
 				}
@@ -192,33 +190,6 @@ public class LogAnalyzerController {
 		request.setAttribute("monthWithProcessHeader", monthsWithProcessHeader);
 		request.setAttribute("monthCount", monthCount);
 		request.setAttribute("monthDetail", detailInfo);
-//		
-//		HashMap<String, Integer> processCount = new HashMap<String, Integer>();
-//		for (JobInformation job : result){
-//			List<String> processes = job.getCrashProcess();
-//			
-//			for (String process : processes){
-//				if (processCount.containsKey(process))
-//					processCount.put(process, processCount.get(process) + 1);
-//				else
-//					processCount.put(process, 1);
-//			}
-//		}
-//		
-//		Set<String> keySet = processCount.keySet();
-//		String processName = "";
-//		String count = "";
-//		
-//		for (String process : keySet){
-//			processName += process + ",";
-//			count += processCount.get(process) + ",";
-//		}
-//		
-//		processName = processName.substring(0, processName.lastIndexOf(","));
-//		count = count.substring(0, count.lastIndexOf(","));
-//
-//		request.setAttribute("processName", processName);
-//		request.setAttribute("count", count);
 	}
 	
 	private void merge(String date, HashMap<String, Integer> candidateCrash,HashMap<String, HashMap<String, Integer>> processMonthlyCrash ){
@@ -305,9 +276,6 @@ public class LogAnalyzerController {
 		List<JobInformation> retList = null;
 
 		try{
-			
-			//
-			
 			String mwVersion = query.getMWVersion();
 			if (!mwVersion.equals("none")){
 				List<JobInformation> jobs = this.searchMWVersion(mwVersion);
@@ -380,27 +348,11 @@ public class LogAnalyzerController {
 			
 			String patchVersion = query.getPatchVersion();
 			if (!patchVersion.equals("none")){
-				//List<JobInformation> jobs = this.searchPatchVersion(patchVersion);
 				
 				if (retList != null)
 					retList = filterByPatch(retList, patchVersion);
-
-//				if (retList == null)
-//					retList = jobs;
-//				else
-//					retList.retainAll(jobs);
 			}
 			
-//			List<String> features = query.getFeatures();
-//			for (String feature : features) {
-//				List<JobInformation> jobs = this.searchFeatureUsage(feature);
-//
-//				if (retList == null)
-//					retList = jobs;
-//				else
-//					retList.retainAll(jobs);
-//			}
-//			
 			String duration = query.getJobDuration();
 			if (!duration.isEmpty()){
 				String sign = readSign(duration);
@@ -552,36 +504,6 @@ public class LogAnalyzerController {
 	}
 
 	private List<JobInformation> filterResult(String sign, String digit, List<JobInformation> retList) {
-//		List<JobInformation> candidate = new ArrayList<JobInformation>(retList);
-//		
-//		
-//		if (sign.equals("==")){
-//			for (JobInformation job : candidate){
-//				if (Math.abs(Double.parseDouble(digit) - job.getJobDuration()) > 0.01)
-//					retList.remove(job);
-//			}
-//		}else if (sign.equals(">=")){
-//			for (JobInformation job : candidate){
-//				if (job.getJobDuration() < Double.parseDouble(digit))
-//					retList.remove(job);
-//			}
-//		}else if (sign.equals(">")){
-//			for (JobInformation job : candidate){
-//				if (job.getJobDuration() <= Double.parseDouble(digit))
-//					retList.remove(job);
-//			}
-//		}else if (sign.equals("<")){
-//			for (JobInformation job : candidate){
-//				if (job.getJobDuration() >= Double.parseDouble(digit))
-//					retList.remove(job);
-//			}
-//		}else{
-//			for (JobInformation job : candidate){
-//				if (job.getJobDuration() > Double.parseDouble(digit))
-//					retList.remove(job);
-//			}
-//		}
-		
 		
 		List<JobInformation> candidate = new ArrayList<JobInformation>();
 		
