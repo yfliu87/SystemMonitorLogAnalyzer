@@ -1,6 +1,5 @@
 package com.SystemMonitor.Controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,8 +78,7 @@ public class LogAnalyzerController {
 					mv = new ModelAndView("/CrashbarChartResult");
 				else if (queryCondition.getChartType().equals("LineChart"))
 					mv = new ModelAndView("/CrashlineChartResult");
-				
-				//mv = new ModelAndView("/RadarChartResult");
+
 			} else if (queryCondition.getChartType().equals("BarChart")) {
 				mv = new ModelAndView("/barChartResult");
 			} else if (queryCondition.getChartType().equals("LineChart")) {
@@ -269,7 +267,6 @@ public class LogAnalyzerController {
 		request.setAttribute("TotalCount", "There are totally " + totalCount + "/" + this._jobCount + " results.");
 		request.setAttribute("jobField", "MWVersion, Patch, Job Name, Well Name, Client Name, Workflow, UnitSystem, Start Date, Duration(hr), Crash");
 		request.setAttribute("fullJobInfo", fullJobInfo.toString().substring(0, fullJobInfo.length() - 1));
-	
 	}
 	
 	public List<JobInformation> searchByQuery(SystemMonitorQuery query, boolean isCrashed) {
@@ -278,12 +275,7 @@ public class LogAnalyzerController {
 		try{
 			String mwVersion = query.getMWVersion();
 			if (!mwVersion.equals("none")){
-				List<JobInformation> jobs = this.searchMWVersion(mwVersion);
-
-				if (retList == null)
-					retList = jobs;
-				else
-					retList.retainAll(jobs);
+				retList = this.searchMWVersion(mwVersion);
 			}			
 			
 			String workflow = query.getWorkflow();
@@ -375,11 +367,9 @@ public class LogAnalyzerController {
 		return new ArrayList<JobInformation>(retList);
 	}
 
-	private List<JobInformation> filterByPatch(List<JobInformation> retList,
-			String patchVersion) {
+	private List<JobInformation> filterByPatch(List<JobInformation> retList, String patchVersion) {
 		
 		String convertedPatch = PatchVersionDefinition.convert(patchVersion);
-		
 		List<JobInformation> ret = new ArrayList<JobInformation>();
 		
 		for (JobInformation job : retList){
@@ -437,15 +427,13 @@ public class LogAnalyzerController {
 		return ret;
 	}
 
-	public List<JobInformation> searchJobByTimeRange(String startDate, String stopDate)
-			throws IOException {
+	public List<JobInformation> searchJobByTimeRange(String startDate, String stopDate) throws IOException {
 		List<JobInformation> ret = new ArrayList<JobInformation>();
 
 		if (startDate == null || stopDate == null)
 			return ret;
 
-		List<String> datesInRange = DateHelper.getDatesInRange(startDate,
-				stopDate);
+		List<String> datesInRange = DateHelper.getDatesInRange(startDate, stopDate);
 		List<JobInformation> result = null;
 		Set<JobInformation> candidates = new HashSet<JobInformation>();
 
