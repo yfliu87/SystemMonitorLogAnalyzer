@@ -449,6 +449,7 @@ public class ParserWrapper {
 				if (shouldDelete){
 					al.clear();
 					fis.close();
+					dis.close();
 					file.delete();
 				}
 			}catch(Exception e){
