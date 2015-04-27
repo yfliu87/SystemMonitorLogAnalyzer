@@ -130,4 +130,16 @@ public class DateHelper {
 		}
 		return calendar;
 	}
+	
+	public static String getYearMonthFormat(Calendar date){
+		StringBuilder ret = new StringBuilder();
+		ret.append("" + date.get(Calendar.YEAR) + "/");
+		
+		String month = String.valueOf(date.get(Calendar.MONTH) + 1);
+		if (month.length() == 1)
+			month = "0" + month;
+		
+		ret.append(month);
+		return ret.toString();
+	}
 }
