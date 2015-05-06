@@ -8,4 +8,7 @@ index
 D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logIndex
 
 crashfile
-D:\\crashdetail.txt
+D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\crashdetail.txt
+
+statisticfile
+D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\statistic.txt

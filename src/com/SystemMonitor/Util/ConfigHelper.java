@@ -38,6 +38,8 @@ public class ConfigHelper {
 							filePathMap.put("index", bReader.readLine());
 						} else if (msg.indexOf("crashfile") != -1) {
 							filePathMap.put("crashfile", bReader.readLine());
+						} else if (msg.indexOf("statisticfile") != -1) {
+							filePathMap.put("statisticfile", bReader.readLine());
 						}
 					}
 			} catch (IOException e) {
@@ -81,5 +83,9 @@ public class ConfigHelper {
 	
 	public String getCrashDetailPath(){
 		return this.filePathMap.get("crashfile");
+	}
+	
+	public String getStatisticFilePath(){
+		return this.filePathMap.get("statisticfile");
 	}
 }

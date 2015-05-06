@@ -24,11 +24,11 @@ public class Program {
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
 
-			csvParser.parseCSV_singlethread();
+//			csvParser.parseCSV_singlethread();
 			
 //			crashFromFPGrowth(config.getCrashDetailPath());
 			
-			crashFromMultiTree(config.getCrashDetailPath());
+			crashFromMultiTree(config.getCrashDetailPath(), config.getStatisticFilePath());
 //			
 //			String indexFilePath = config.getIndexLocation();
 //			LogIndexer indexer = new LogIndexer(logFilePath, indexFilePath, csvParser);
@@ -40,10 +40,12 @@ public class Program {
 		}
 	}
 
-	private static void crashFromMultiTree(String crashDetailPath) {
+	private static void crashFromMultiTree(String crashDetailPath, String statisticFile) {
 		CallstackAnalyzer analyzer = new CallstackAnalyzer();
+
 		analyzer.buildTree(crashDetailPath);
-		analyzer.printResult();
+
+		analyzer.printResult(statisticFile);
 	}
 
 	private static void crashFromFPGrowth(String crashDetailPath) {
