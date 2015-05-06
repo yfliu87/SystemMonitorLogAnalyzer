@@ -42,7 +42,7 @@ public class CallstackAnalyzer {
 		if (message == null || message.length() == 0 || !message.contains(";"))
 			return;
 		
-		String current = pre + message.substring(0, message.indexOf(";") - 1);
+		String current = (pre.isEmpty()? "" : pre + ";") + message.substring(0, message.indexOf(";"));
 		
 		if (childTree.containsKey(current)){
 			CallstackTree child = childTree.get(current);

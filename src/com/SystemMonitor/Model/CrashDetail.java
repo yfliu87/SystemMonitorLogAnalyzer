@@ -23,6 +23,6 @@ public class CrashDetail {
 	}
 
 	public String toString(){
-		return this._processOperation + "," + this._componentName;
+		return this._processOperation + (this._componentName.isEmpty() ? "" : " - " + this._componentName);
 	}
 }
