@@ -14,7 +14,6 @@ public class Program {
 
 	public static void main(String[] args) {
 		ConfigHelper config = ConfigHelper.getInstance("D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\config.txt");
-		
 		String logFilePath = config.getLogLocation();
 		String featureMappingFilePath = config.getFeatureMappingFileLocation();
 		
@@ -24,27 +23,23 @@ public class Program {
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
 
-//			csvParser.parseCSV_singlethread();
+			csvParser.parseCSV_singlethread();
 			
 //			crashFromFPGrowth(config.getCrashDetailPath());
 			
-			crashFromMultiTree(config.getCrashDetailPath(), config.getStatisticFilePath());
+			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath());
 //			
-//			String indexFilePath = config.getIndexLocation();
-//			LogIndexer indexer = new LogIndexer(logFilePath, indexFilePath, csvParser);
-//			
-//			indexer.index();
-//			System.out.println("index finished");
+			String indexFilePath = config.getIndexLocation();
+			new LogIndexer(logFilePath, indexFilePath, csvParser).index();
+			System.out.println("index finished");
 		}catch(Exception e){
 			SystemMonitorException.logException(Thread.currentThread(), e);
 		}
 	}
 
-	private static void crashFromMultiTree(String crashDetailPath, String statisticFile) {
+	private static void crashFromPrefixTree(String crashDetailPath, String statisticFile) {
 		CallstackAnalyzer analyzer = new CallstackAnalyzer();
-
 		analyzer.buildTree(crashDetailPath);
-
 		analyzer.printResult(statisticFile);
 	}
 

@@ -25,8 +25,7 @@ public class CallstackAnalyzer {
 	public void buildTree(String crashDetailPath) {
 		BufferedReader br = null;
 		try {
-			FileReader crashfile = new FileReader(crashDetailPath);
-			br = new BufferedReader(crashfile);
+			br = new BufferedReader(new FileReader(crashDetailPath));
 
 			String message = null;
 			while((message = br.readLine()) != null){

@@ -87,7 +87,7 @@ public class LogIndexer{
 			File files = new File(this._logFilePath);
 
 			for (File file : files.listFiles()) {
-				if (file.getAbsolutePath().endsWith("csv"))
+				if (file.getAbsolutePath().endsWith("csv") || file.getAbsolutePath().endsWith("txt"))
 					continue;
 
 				indexFile(file, iw);

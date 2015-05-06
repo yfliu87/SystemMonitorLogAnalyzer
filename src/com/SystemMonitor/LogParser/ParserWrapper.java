@@ -50,7 +50,6 @@ public class ParserWrapper {
 		_logFilePath = logFilePath;
 		_featureAnalyzer = new FeatureAnalyzer(featureMappingFilePath);
 		_crashDetailFile = crashFilePath;
-
 		_operation = new Hashtable<String,Integer>();
 		_component = new Hashtable<String,Integer>();
 	}
@@ -68,9 +67,6 @@ public class ParserWrapper {
 			parser.run();
 		}
 		crashDetailFile.close();
-		
-		System.out.println("operation count:" + this._operation.size());
-		System.out.println("component count:" + this._component.size());
 	}
 //	
 //	public void parseCSV_multithread() throws InterruptedException{
@@ -423,7 +419,6 @@ public class ParserWrapper {
 	}
 
 	public void filterTargetJobByType(String filter) {
-		// TODO Auto-generated method stub
 		File fileFolder = new File(_logFilePath);
 		File[] files = fileFolder.listFiles();
 		
