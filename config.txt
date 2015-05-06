@@ -1,8 +1,11 @@
 logs
-/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/logs
+D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs
 
 feature
-/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/featureMapping
+D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\featureMapping
 
 index
-/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/logIndex
+D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logIndex
+
+crashfile
+D:\\crashdetail.txt
