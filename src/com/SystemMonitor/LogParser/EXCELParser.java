@@ -1,18 +1,22 @@
 package com.SystemMonitor.LogParser;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -21,6 +25,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import com.SystemMonitor.Model.CrashDetail;
 import com.SystemMonitor.Model.JobInformation;
 import com.SystemMonitor.Util.CSVConverter;
 import com.SystemMonitor.Util.DateHelper;
@@ -30,8 +35,11 @@ public class EXCELParser implements Runnable{
 	private File _file;
 	private FeatureAnalyzer _featureAnalyzer;
 	private List<String> _filterJobName ;
+	private BufferedWriter _crashDetailFile;
+	private Hashtable<String, Integer> _operations;
+	private Hashtable<String, Integer> _components;
 
-	public EXCELParser(File file, FeatureAnalyzer analyzer){
+	public EXCELParser(File file, FeatureAnalyzer analyzer, BufferedWriter crashDetailFile, Hashtable<String, Integer> operations, Hashtable<String, Integer> components){
 		this._file = file;
 		this._featureAnalyzer = analyzer;
 		this._filterJobName = new ArrayList<String>(Arrays.asList(
@@ -39,6 +47,9 @@ public class EXCELParser implements Runnable{
 				"BCAL","BeforeCal","Before Cal","Before Calibration","Before_Cal","Before_Calibration",
 				"calibration","CalCheck","op check","opchekc","op chk","OP_CHECK","op_chk",
 				"Simulitor=N","test","shop","wellsite","KLC","OPCK","Yanjiao"));
+		this._crashDetailFile = crashDetailFile;
+		this._operations = operations;
+		this._components = components;
 	}
 
 	@Override
@@ -60,9 +71,10 @@ public class EXCELParser implements Runnable{
 			List<Map<String, List<String>>> toolsList = new ArrayList<Map<String, List<String>>>();
 
 			boolean isNewJob = false;
+			int rowIndex = 0;
 			for (Iterator<Row> iterRow =(Iterator<Row>)sheet.rowIterator(); iterRow.hasNext();){ 
+				
 				Row row = iterRow.next();
-
 				if (row == null)
 					continue;
 
@@ -79,6 +91,8 @@ public class EXCELParser implements Runnable{
 					jobStopDate = readDateInfo(row);
 					jobInfo.setJobStopDate(jobStopDate);
 					jobInfo.setJobDuration(this.getJobDuration(jobInfo.getJobStartDate(), jobInfo.getJobStopDate()));
+					
+					this._crashDetailFile.write(jobInfo.getCrashDetail());
 
 					Set<String> featureFound = detectFeature(featureUsage);
 					updateJobInfo(jobInfo, jobs, featureFound, featureUsages, tools, toolsList);
@@ -95,11 +109,14 @@ public class EXCELParser implements Runnable{
 					
 					if (containsCrashInfo(row)){
 						recordCrashInfo(row, jobInfo);
+						
+						traceback(sheet, row, jobInfo);
 					}
 				}
 			}
-
-			updateSummary(workbook, new File(xlsFile), jobs, featureUsages, toolsList);
+			
+			updateSummary(workbook, new File(xlsFile), jobs, featureUsages, toolsList);	
+			
 		} catch (Exception e) {
 			SystemMonitorException.logException(Thread.currentThread(), e, this._file);
 		} finally {
@@ -107,6 +124,68 @@ public class EXCELParser implements Runnable{
 		}
 	}
 	
+	private void traceback(HSSFSheet sheet, Row row, JobInformation jobInfo) throws IOException {
+		int rowIndex = row.getRowNum();
+		CrashDetail detail = null;
+		Stack<CrashDetail> detailStack = new Stack<CrashDetail>();
+		
+		int index = rowIndex - 5;
+		while (index < rowIndex) {
+			Row reasonRow = sheet.getRow(index);
+			++index;
+			if (reasonRow == null)
+				continue;
+		
+			Cell cell = reasonRow.getCell(LogColumnDefinition.PROCESS.ordinal());
+			if (cell == null)
+				continue;
+
+			Cell componentCell = reasonRow.getCell(LogColumnDefinition.COMPONENT.ordinal());
+			Cell operationCell = reasonRow.getCell(LogColumnDefinition.OPERATION.ordinal());
+			
+			String value = (componentCell!=null) ? componentCell.getStringCellValue() : "";
+			value += (operationCell != null) ? " - " + operationCell.getStringCellValue() : "";
+
+			detail = new CrashDetail();
+			detail.updateProcessOperation(value);
+
+			value = "";
+			Cell contextCell = reasonRow.getCell(LogColumnDefinition.CONTEXT.ordinal());
+			if (contextCell != null)
+				value = contextCell.getStringCellValue();
+			
+			if (!value.equals("")){
+				String component = null;
+				if (value.contains("ComponentCode"))
+					component = value.substring(value.indexOf("ComponentCode"));
+				
+				String target = "";
+				if (component != null && component.contains(";"))
+					target = component.substring(0, component.indexOf(";"));
+			
+				detail.updateComponent(target);
+				
+				updatePool(componentCell.getStringCellValue(), operationCell.getStringCellValue(), target);
+			}
+			detailStack.push(detail);
+		}
+		jobInfo.updateCrashDetails(detailStack);	
+	}
+
+	private void updatePool(String process, String operation, String component) {
+		if (this._operations.containsKey(operation)){
+			this._operations.put(operation, this._operations.get(operation) + 1);
+		}else{
+			this._operations.put(operation, 1);
+		}
+		
+		if (this._components.containsKey(component)){
+			this._components.put(component, this._components.get(component) + 1);
+		}else{
+			this._components.put(component, 1);
+		}
+	}
+
 	private void recordCrashInfo(Row row, JobInformation jobInfo) {
 		jobInfo.setCrashed(true);
 		

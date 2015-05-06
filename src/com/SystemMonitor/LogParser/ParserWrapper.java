@@ -10,13 +10,16 @@ package com.SystemMonitor.LogParser;
  * also be indexed as log messges.
  */
 
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,148 +42,159 @@ import com.SystemMonitor.Util.SystemMonitorException;
 public class ParserWrapper {
 	private FeatureAnalyzer _featureAnalyzer;
 	private String _logFilePath;
+	private String _crashDetailFile = "D:\\crashdetail.txt";
+	private Hashtable<String, Integer> _operation;
+	private Hashtable<String, Integer> _component;
 	
 	public ParserWrapper(String logFilePath, String featureMappingFilePath){
 		_logFilePath = logFilePath;
 		_featureAnalyzer = new FeatureAnalyzer(featureMappingFilePath);
+
+		_operation = new Hashtable<String,Integer>();
+		_component = new Hashtable<String,Integer>();
 	}
 	
-	public void parseCSV_singlethread(){
+	public void parseCSV_singlethread() throws IOException{
 		File fileFolder = new File(_logFilePath);
 		File[] files = fileFolder.listFiles();
+		BufferedWriter crashDetailFile = new BufferedWriter(new FileWriter(_crashDetailFile));
 		
 		for (File file : files){
 			if(file.getAbsolutePath().endsWith("xls"))
 				continue;
 			
-			EXCELParser parser = new EXCELParser(file, _featureAnalyzer);
+			EXCELParser parser = new EXCELParser(file, _featureAnalyzer, crashDetailFile, _operation, _component);
 			parser.run();
 		}
-	}
-	
-	public void parseCSV_multithread() throws InterruptedException{
-		File fileFolder = new File(_logFilePath);
-		File[] files = fileFolder.listFiles();
-		List<File> smallFiles = new ArrayList<File>();
-		List<File> tenMBFiles = new ArrayList<File>();
-		List<File> twentyMBFiles = new ArrayList<File>();
-		List<File> fiftyMBFiles = new ArrayList<File>();
-		List<File> hundredMBFiles = new ArrayList<File>();
-		List<File> overhundredMBFiles = new ArrayList<File>();
+		crashDetailFile.close();
 		
-		for (File file : files){
-			if(file.getAbsolutePath().endsWith("xls"))
-				continue;
-			
-			if (file.length() <= 5000000){
-				smallFiles.add(file);
-			}
-			else if (file.length() > 5000000 && file.length() <= 10000000){
-				tenMBFiles.add(file);
-			}
-			else if (file.length() > 10000000 && file.length() <= 30000000){
-				twentyMBFiles.add(file);
-			}
-			else if (file.length() > 30000000 && file.length() <= 50000000){
-				fiftyMBFiles.add(file);
-			}
-			else if (file.length() > 50000000 && file.length() <= 100000000){
-				hundredMBFiles.add(file);
-			}
-			else if (file.length() > 100000000){
-				overhundredMBFiles.add(file);
-			}
-		}
-		
-		if (smallFiles.size() > 0){
-			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
-					smallFiles.size(), smallFiles.size(), 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>());
-			for (File file : smallFiles) {
-				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
-			}
-			Thread.sleep(30000);
-			hugeexecutor.shutdown();
-			
-			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
-		}
-		if (tenMBFiles.size() > 0){
-			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
-					tenMBFiles.size(), tenMBFiles.size(), 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>());
-			for (File file : tenMBFiles) {
-				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
-			}
-			Thread.sleep(60000);
-			hugeexecutor.shutdown();
-			
-			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
-		}
-		if (twentyMBFiles.size() > 0){
-			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
-					twentyMBFiles.size(), twentyMBFiles.size(), 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>());
-			for (File file : twentyMBFiles) {
-				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
-			}
-			Thread.sleep(60000);
-			hugeexecutor.shutdown();
-			
-			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
-		}
-		if (fiftyMBFiles.size() > 0){
-			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
-					fiftyMBFiles.size(), fiftyMBFiles.size(), 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>());
-			for (File file : fiftyMBFiles) {
-				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
-			}
-			Thread.sleep(60000);
-			hugeexecutor.shutdown();
-			
-			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
-		}
-		if (hundredMBFiles.size() > 0){
-			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
-					hundredMBFiles.size(), hundredMBFiles.size(), 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>());
-			for (File file : hundredMBFiles) {
-				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
-			}
-			Thread.sleep(60000);
-			hugeexecutor.shutdown();
-			
-			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
-		}
-		if (overhundredMBFiles.size() > 0){
-			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
-					overhundredMBFiles.size(), overhundredMBFiles.size(), 1, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<Runnable>());
-			for (File file : overhundredMBFiles) {
-				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
-			}
-			Thread.sleep(60000);
-			hugeexecutor.shutdown();
-			
-			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
-		}
+		System.out.println("operation count:" + this._operation.size());
+		System.out.println("component count:" + this._component.size());
 	}
-	
-	@SuppressWarnings({ "unused", "unchecked" })
-	private void parseCSV_futuretask() throws InterruptedException{
-		ExecutorService pool = Executors.newCachedThreadPool();
-		List<Future<Integer>> future = new ArrayList<Future<Integer>>();
-		
-		File fileFolder = new File(_logFilePath);
-		File[] files = fileFolder.listFiles();
-		for (File subfile : files){
-			Runnable r = new EXCELParser(subfile, _featureAnalyzer);
-			Future<Integer> f = (Future<Integer>) pool.submit(r);
-			future.add(f);
-		}
-		Thread.sleep(1000);
-		pool.shutdown();
-	}
+//	
+//	public void parseCSV_multithread() throws InterruptedException{
+//		File fileFolder = new File(_logFilePath);
+//		File[] files = fileFolder.listFiles();
+//		List<File> smallFiles = new ArrayList<File>();
+//		List<File> tenMBFiles = new ArrayList<File>();
+//		List<File> twentyMBFiles = new ArrayList<File>();
+//		List<File> fiftyMBFiles = new ArrayList<File>();
+//		List<File> hundredMBFiles = new ArrayList<File>();
+//		List<File> overhundredMBFiles = new ArrayList<File>();
+//		
+//		for (File file : files){
+//			if(file.getAbsolutePath().endsWith("xls"))
+//				continue;
+//			
+//			if (file.length() <= 5000000){
+//				smallFiles.add(file);
+//			}
+//			else if (file.length() > 5000000 && file.length() <= 10000000){
+//				tenMBFiles.add(file);
+//			}
+//			else if (file.length() > 10000000 && file.length() <= 30000000){
+//				twentyMBFiles.add(file);
+//			}
+//			else if (file.length() > 30000000 && file.length() <= 50000000){
+//				fiftyMBFiles.add(file);
+//			}
+//			else if (file.length() > 50000000 && file.length() <= 100000000){
+//				hundredMBFiles.add(file);
+//			}
+//			else if (file.length() > 100000000){
+//				overhundredMBFiles.add(file);
+//			}
+//		}
+//		
+//		if (smallFiles.size() > 0){
+//			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
+//					smallFiles.size(), smallFiles.size(), 1, TimeUnit.SECONDS,
+//					new LinkedBlockingQueue<Runnable>());
+//			for (File file : smallFiles) {
+//				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
+//			}
+//			Thread.sleep(30000);
+//			hugeexecutor.shutdown();
+//			
+//			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
+//		}
+//		if (tenMBFiles.size() > 0){
+//			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
+//					tenMBFiles.size(), tenMBFiles.size(), 1, TimeUnit.SECONDS,
+//					new LinkedBlockingQueue<Runnable>());
+//			for (File file : tenMBFiles) {
+//				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
+//			}
+//			Thread.sleep(60000);
+//			hugeexecutor.shutdown();
+//			
+//			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
+//		}
+//		if (twentyMBFiles.size() > 0){
+//			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
+//					twentyMBFiles.size(), twentyMBFiles.size(), 1, TimeUnit.SECONDS,
+//					new LinkedBlockingQueue<Runnable>());
+//			for (File file : twentyMBFiles) {
+//				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
+//			}
+//			Thread.sleep(60000);
+//			hugeexecutor.shutdown();
+//			
+//			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
+//		}
+//		if (fiftyMBFiles.size() > 0){
+//			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
+//					fiftyMBFiles.size(), fiftyMBFiles.size(), 1, TimeUnit.SECONDS,
+//					new LinkedBlockingQueue<Runnable>());
+//			for (File file : fiftyMBFiles) {
+//				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
+//			}
+//			Thread.sleep(60000);
+//			hugeexecutor.shutdown();
+//			
+//			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
+//		}
+//		if (hundredMBFiles.size() > 0){
+//			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
+//					hundredMBFiles.size(), hundredMBFiles.size(), 1, TimeUnit.SECONDS,
+//					new LinkedBlockingQueue<Runnable>());
+//			for (File file : hundredMBFiles) {
+//				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
+//			}
+//			Thread.sleep(60000);
+//			hugeexecutor.shutdown();
+//			
+//			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
+//		}
+//		if (overhundredMBFiles.size() > 0){
+//			ThreadPoolExecutor hugeexecutor = new ThreadPoolExecutor(
+//					overhundredMBFiles.size(), overhundredMBFiles.size(), 1, TimeUnit.SECONDS,
+//					new LinkedBlockingQueue<Runnable>());
+//			for (File file : overhundredMBFiles) {
+//				hugeexecutor.execute(new EXCELParser(file, _featureAnalyzer));
+//			}
+//			Thread.sleep(60000);
+//			hugeexecutor.shutdown();
+//			
+//			hugeexecutor.awaitTermination(60000, TimeUnit.SECONDS);
+//		}
+//	}
+//	
+//	@SuppressWarnings({ "unused", "unchecked" })
+//	private void parseCSV_futuretask() throws InterruptedException{
+//		ExecutorService pool = Executors.newCachedThreadPool();
+//		List<Future<Integer>> future = new ArrayList<Future<Integer>>();
+//		
+//		File fileFolder = new File(_logFilePath);
+//		File[] files = fileFolder.listFiles();
+//		for (File subfile : files){
+//			Runnable r = new EXCELParser(subfile, _featureAnalyzer);
+//			Future<Integer> f = (Future<Integer>) pool.submit(r);
+//			future.add(f);
+//		}
+//		Thread.sleep(1000);
+//		pool.shutdown();
+//	}
 
 	public Map<String, List<String>> getTools(File file) {
 		HSSFWorkbook workbook = null;

@@ -3,6 +3,9 @@ package com.SystemMonitor.Model;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Stack;
+
+import org.json.JSONObject;
 
 import com.SystemMonitor.Util.DateHelper;
 
@@ -21,10 +24,21 @@ private String jobName;
 	private boolean isSimulation;
 	private boolean isCrashed;
 	private List<String> crashedProcess;
+	private List<Stack<CrashDetail>> crashDetails;
+	
+	public void updateCrashDetails(Stack<CrashDetail> obj) {
+		crashDetails.add(obj);
+	}
+
+	public List<Stack<CrashDetail>> getCrashDetails() {
+		return this.crashDetails;
+	}
+
 	private List<String> patchVersions;
 	
 	public JobInformation(){
 		crashedProcess = new ArrayList<String>();
+		crashDetails = new ArrayList<Stack<CrashDetail>>();
 		patchVersions = new ArrayList<String>();
 	}
 	
@@ -222,5 +236,17 @@ private String jobName;
 		}
 		String temp = ret.toString();
 		return temp.substring(0, temp.length() - 1);
+	}
+
+	public String getCrashDetail() {
+		StringBuilder ret = new StringBuilder(256);
+		
+		for (Stack<CrashDetail> detailStack : crashDetails){
+			while(!detailStack.isEmpty())
+				ret.append(detailStack.pop().toString() + ";");
+			
+			ret.append("\r\n");
+		}
+		return ret.toString();
 	}
 }
