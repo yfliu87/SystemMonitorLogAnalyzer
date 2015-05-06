@@ -1,15 +1,11 @@
 .tern-project
 build/*
 /build/
-<<<<<<< HEAD
 *logs*/
 *log*/
-algorithm/
 .classpath
 *.out
-=======
 logs/
 logs_bk/
 *bk.*
 logIndex/
->>>>>>> 2aa8c8657f7078402f47de52ecb5c08ee460d409
