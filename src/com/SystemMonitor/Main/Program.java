@@ -19,14 +19,12 @@ public class Program {
 		String featureMappingFilePath = config.getFeatureMappingFileLocation();
 		
 		try{
-			ParserWrapper csvParser = new ParserWrapper(logFilePath, featureMappingFilePath);
+			ParserWrapper csvParser = new ParserWrapper(logFilePath, featureMappingFilePath, config.getCrashDetailPath());
 //			csvParser.parseCSV_multithread();
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
 
-//			csvParser.parseCSV_singlethread();
-			
-//			File detailFile = new File("D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\census.dat");
+			csvParser.parseCSV_singlethread();
 			
 //			crashFromFPGrowth(config.getCrashDetailPath());
 			

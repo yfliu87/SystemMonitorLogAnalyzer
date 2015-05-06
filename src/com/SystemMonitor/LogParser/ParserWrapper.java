@@ -42,13 +42,14 @@ import com.SystemMonitor.Util.SystemMonitorException;
 public class ParserWrapper {
 	private FeatureAnalyzer _featureAnalyzer;
 	private String _logFilePath;
-	private String _crashDetailFile = "D:\\crashdetail.txt";
+	private String _crashDetailFile = "";
 	private Hashtable<String, Integer> _operation;
 	private Hashtable<String, Integer> _component;
 	
-	public ParserWrapper(String logFilePath, String featureMappingFilePath){
+	public ParserWrapper(String logFilePath, String featureMappingFilePath, String crashFilePath){
 		_logFilePath = logFilePath;
 		_featureAnalyzer = new FeatureAnalyzer(featureMappingFilePath);
+		_crashDetailFile = crashFilePath;
 
 		_operation = new Hashtable<String,Integer>();
 		_component = new Hashtable<String,Integer>();
