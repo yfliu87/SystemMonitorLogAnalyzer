@@ -1,5 +1,10 @@
 package com.SystemMonitor.Main;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import com.SystemMonitor.Algorithm.CallstackAnalyzer;
+import com.SystemMonitor.Algorithm.FPGrowth;
 import com.SystemMonitor.Indexer.LogIndexer;
 import com.SystemMonitor.LogParser.ParserWrapper;
 import com.SystemMonitor.Util.ConfigHelper;
@@ -18,16 +23,37 @@ public class Program {
 //			csvParser.parseCSV_multithread();
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
+
+//			csvParser.parseCSV_singlethread();
+			
+//			File detailFile = new File("D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\census.dat");
+			
+//			crashFromFPGrowth(config.getCrashDetailPath());
+			
+			crashFromMultiTree(config.getCrashDetailPath());
 //			
-			csvParser.parseCSV_singlethread();
+//			String indexFilePath = config.getIndexLocation();
+//			LogIndexer indexer = new LogIndexer(logFilePath, indexFilePath, csvParser);
 //			
-			String indexFilePath = config.getIndexLocation();
-			LogIndexer indexer = new LogIndexer(logFilePath, indexFilePath, csvParser);
-//			
-			indexer.index();
-			System.out.println("index finished");
+//			indexer.index();
+//			System.out.println("index finished");
 		}catch(Exception e){
 			SystemMonitorException.logException(Thread.currentThread(), e);
+		}
+	}
+
+	private static void crashFromMultiTree(String crashDetailPath) {
+		CallstackAnalyzer analyzer = new CallstackAnalyzer();
+		analyzer.buildTree(crashDetailPath);
+		analyzer.printResult();
+	}
+
+	private static void crashFromFPGrowth(String crashDetailPath) {
+		try {
+			FPGrowth growth = new FPGrowth(new File(crashDetailPath), 3);
+
+		} catch (FileNotFoundException e) {
+			SystemMonitorException.logException(Thread.currentThread(), e, e.getMessage());
 		}
 	}
 
