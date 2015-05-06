@@ -1,5 +1,6 @@
 .tern-project
 build/*
 /build/
-logs/
-logs_bk/
+*logs*/
+*log*/
+algorithm/
