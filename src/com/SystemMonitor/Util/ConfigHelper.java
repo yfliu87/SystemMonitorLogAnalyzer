@@ -36,6 +36,8 @@ public class ConfigHelper {
 							filePathMap.put("featureMap", bReader.readLine());
 						} else if (msg.indexOf("index") != -1) {
 							filePathMap.put("index", bReader.readLine());
+						} else if (msg.indexOf("crashfile") != -1) {
+							filePathMap.put("crashfile", bReader.readLine());
 						}
 					}
 			} catch (IOException e) {
@@ -75,5 +77,9 @@ public class ConfigHelper {
 	
 	public String getLogLocation(){
 		return this.filePathMap.get("logs");
+	}
+	
+	public String getCrashDetailPath(){
+		return this.filePathMap.get("crashfile");
 	}
 }
