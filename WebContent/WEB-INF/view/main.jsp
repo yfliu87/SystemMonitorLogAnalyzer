@@ -25,18 +25,19 @@
 				<td>MW Version &nbsp;&nbsp;<select name="MWVersion" selected STYLE="width:220px">
 						<option value="none">none</option>
 						<option value="4.0.9163.3000">MW 2013</option>
-						<option value="5.0.29600.3000">MW 2014</option>
+						<option value="5.0.29600.3100">MW 2014</option>
 					</select>
 				</td>
 			</tr><br/><br/>
 		 	<tr align="left">
 				<td>Patch Version <select name="patchVersion" selected STYLE="width:217px">
-						<option value="none">Coming soon</option>
-				<!-- 	<option value="2013 SP1 WL">2013 SP1 WL</option>
+						<option value="none">None</option>
+						<option value="2013 SP1 WL">2013 SP1 WL</option>
 						<option value="2013 SP1 D&M">2013 SP1 D&M</option>
 						<option value="2013 SP2">2013 SP2</option>
 						<option value="2013 SP3">2013 SP3</option>
-						<option value="2013 SP4">2013 SP4</option> -->
+						<option value="2013 SP4">2013 SP4</option>
+						<option value="2014 SP1">2014 SP1</option>
 					</select>
 				</td>
 			</tr><br/><br/>

@@ -526,4 +526,9 @@ public class EXCELParser implements Runnable{
 			}
 		}
 	}
+
+	public void filter(String filter) {
+		// TODO Auto-generated method stub
+		
+	}
 }
