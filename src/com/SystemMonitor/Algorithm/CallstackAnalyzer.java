@@ -4,7 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 
 public class CallstackAnalyzer {
 
@@ -58,10 +62,8 @@ public class CallstackAnalyzer {
 		//level traverse multitree
 		ArrayList<CallstackTree> levelNode = new ArrayList<CallstackTree>();
 		
-		for (String ops : this._root.getChildTree().keySet()){
-			levelNode.add(this._root.getChildTree().get(ops));
-		}
-		
+		updateQueue(levelNode, order(this._root.getChildTree()));
+
 		int levelCount = levelNode.size();
 		int depth = 1;
 
@@ -74,16 +76,31 @@ public class CallstackAnalyzer {
 
 				CallstackTree node = levelNode.remove(0);
 
-				System.out.println("\toperation: " + node.getOperation()
-						+ ", count: " + node.getOperationCount());
+				System.out.println("\toperation: " + node.getOperation() + ", count: " + node.getOperationCount());
 
-				for (String ops : node.getChildTree().keySet()) {
-					levelNode.add(node.getChildTree().get(ops));
-				}
+				updateQueue(levelNode, order(node.getChildTree()));
 				
 				--levelCount;
 			}
 			++depth;
 		}
+	}
+
+	private void updateQueue(ArrayList<CallstackTree> levelNode, List<Entry<String, CallstackTree>> orderedTree) {
+		for (Entry<String, CallstackTree> node : orderedTree){
+			levelNode.add(node.getValue());
+		}	
+	}
+
+	private List<Entry<String, CallstackTree>> order(HashMap<String, CallstackTree> childTree) {
+		List<Entry<String, CallstackTree>> ret = new ArrayList<Entry<String, CallstackTree>>(childTree.entrySet());
+		
+		Collections.sort(ret, new Comparator<Entry<String, CallstackTree>>(){
+			public int compare(Entry<String, CallstackTree> t1, Entry<String, CallstackTree> t2){
+				return t2.getValue().getOperationCount() - t1.getValue().getOperationCount();
+			}
+		});
+		
+		return ret;
 	}
 }
