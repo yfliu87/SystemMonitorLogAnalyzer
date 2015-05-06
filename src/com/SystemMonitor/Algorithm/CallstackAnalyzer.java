@@ -1,7 +1,9 @@
 package com.SystemMonitor.Algorithm;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +11,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+
+import com.SystemMonitor.Util.SystemMonitorException;
 
 public class CallstackAnalyzer {
 
@@ -58,31 +62,53 @@ public class CallstackAnalyzer {
 		buildTreeRecursively(message.substring(message.indexOf(";") + 1), childTree.get(current).getChildTree(), current);
 	}
 
-	public void printResult() {
-		//level traverse multitree
-		ArrayList<CallstackTree> levelNode = new ArrayList<CallstackTree>();
-		
-		updateQueue(levelNode, order(this._root.getChildTree()));
+	public void printResult(String statisticFile) {
+		BufferedWriter fileWriter = null;
+		try {
+			fileWriter = new BufferedWriter(new FileWriter(statisticFile));
+			
+			ArrayList<CallstackTree> levelNode = new ArrayList<CallstackTree>();
+			
+			updateQueue(levelNode, order(this._root.getChildTree()));
 
-		int levelCount = levelNode.size();
-		int depth = 1;
+			int levelCount = levelNode.size();
+			int depth = 1;
 
-		while (!levelNode.isEmpty()) {
+			while (!levelNode.isEmpty()) {
 
-			levelCount = levelNode.size();
-			System.out.println("\r\nDepth: " + depth);
-
-			while(levelCount != 0){
-
-				CallstackTree node = levelNode.remove(0);
-
-				System.out.println("\toperation: " + node.getOperation() + ", count: " + node.getOperationCount());
-
-				updateQueue(levelNode, order(node.getChildTree()));
+				Collections.sort(levelNode, new Comparator<CallstackTree>(){
+					public int compare(CallstackTree t1, CallstackTree t2){
+						return t2.getOperationCount() - t1.getOperationCount();
+					}
+				});
 				
-				--levelCount;
+				levelCount = levelNode.size();
+				fileWriter.write("\r\n\r\nStep Count: " + depth);
+
+				while(levelCount != 0){
+
+					CallstackTree node = levelNode.remove(0);
+
+					fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + " --- operation: " + node.getOperation());
+
+					for (String subtree : node.getChildTree().keySet()){
+						levelNode.add(node.getChildTree().get(subtree));
+					}
+					
+					--levelCount;
+				}
+				++depth;
 			}
-			++depth;
+		} catch (IOException e) {
+			SystemMonitorException.logException(Thread.currentThread(), e, e.getMessage());
+		} finally{
+			if (fileWriter != null){
+				try {
+					fileWriter.close();
+				} catch (IOException e) {
+					SystemMonitorException.logException(Thread.currentThread(), e, e.getMessage());
+				}
+			}
 		}
 	}
 
