@@ -42,6 +42,8 @@ public class ConfigHelper {
 							filePathMap.put("statisticfile", bReader.readLine());
 						} else if (msg.indexOf("callstack_depth") != -1){
 							filePathMap.put("callstack_depth", bReader.readLine());
+						} else if (msg.indexOf("crash_threshold") != -1){
+							filePathMap.put("crash_threshold", bReader.readLine());
 						}
 					}
 			} catch (IOException e) {
@@ -93,5 +95,9 @@ public class ConfigHelper {
 	
 	public int getCallStackDepth(){
 		return Integer.parseInt(this.filePathMap.get("callstack_depth"));
+	}
+	
+	public int getCrashThreshold(){
+		return Integer.parseInt(this.filePathMap.get("crash_threshold"));
 	}
 }

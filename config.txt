@@ -15,3 +15,6 @@ D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\stati
 
 callstack_depth
 6
+
+crash_threshold
+2

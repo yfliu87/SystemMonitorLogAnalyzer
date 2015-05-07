@@ -29,7 +29,7 @@ public class Program {
 //			crashFromFPGrowth(config.getCrashDetailPath());
 //			System.out.println("FPGrowth statistics finished");
 			
-			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath());
+			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath(), config.getCrashThreshold());
 			System.out.println("prefix tree statistic finished");
 
 			new LogIndexer(logFilePath, config.getIndexLocation(), csvParser).index();
@@ -40,10 +40,10 @@ public class Program {
 		}
 	}
 
-	private static void crashFromPrefixTree(String crashDetailPath, String statisticFile) {
+	private static void crashFromPrefixTree(String crashDetailPath, String statisticFile, int crashThreshold) {
 		CallstackAnalyzer analyzer = new CallstackAnalyzer();
 		analyzer.buildTree(crashDetailPath);
-		analyzer.printResult(statisticFile);
+		analyzer.printResult(statisticFile, crashThreshold);
 	}
 
 	private static void crashFromFPGrowth(String crashDetailPath) {

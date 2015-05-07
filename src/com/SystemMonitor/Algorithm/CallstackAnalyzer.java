@@ -61,7 +61,7 @@ public class CallstackAnalyzer {
 		buildTreeRecursively(message.substring(message.indexOf(";") + 1), childTree.get(current).getChildTree(), current);
 	}
 
-	public void printResult(String statisticFile) {
+	public void printResult(String statisticFile, int crashThreshold) {
 		BufferedWriter fileWriter = null;
 		try {
 			fileWriter = new BufferedWriter(new FileWriter(statisticFile));
@@ -88,12 +88,14 @@ public class CallstackAnalyzer {
 
 					CallstackTree node = levelNode.remove(0);
 
-					fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + " --- operation: " + node.getOperation());
+					if (node.getOperationCount() >= crashThreshold){
+						fileWriter.write("\r\n\tCrash Count: "
+								+ node.getOperationCount() + " --- operation: " + node.getOperation());
 
-					for (String subtree : node.getChildTree().keySet()){
-						levelNode.add(node.getChildTree().get(subtree));
+						for (String subtree : node.getChildTree().keySet()) {
+							levelNode.add(node.getChildTree().get(subtree));
+						}
 					}
-					
 					--levelCount;
 				}
 				++depth;

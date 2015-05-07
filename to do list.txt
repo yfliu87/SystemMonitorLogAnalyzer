@@ -1,5 +1,0 @@
-1. crash count threshold in config file 
-
-2. callstack count threshold in config file 
-
-3. filter process in config file
