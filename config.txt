@@ -12,3 +12,6 @@ D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\crash
 
 statisticfile
 D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\statistic.txt
+
+callstack_depth
+6

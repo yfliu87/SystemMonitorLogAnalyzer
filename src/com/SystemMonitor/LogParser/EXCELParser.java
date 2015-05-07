@@ -38,8 +38,9 @@ public class EXCELParser implements Runnable{
 	private BufferedWriter _crashDetailFile;
 	private Hashtable<String, Integer> _operations;
 	private Hashtable<String, Integer> _components;
+	private int _callstackDepth;
 
-	public EXCELParser(File file, FeatureAnalyzer analyzer, BufferedWriter crashDetailFile, Hashtable<String, Integer> operations, Hashtable<String, Integer> components){
+	public EXCELParser(File file, FeatureAnalyzer analyzer, BufferedWriter crashDetailFile, Hashtable<String, Integer> operations, Hashtable<String, Integer> components, int callstackDepth){
 		this._file = file;
 		this._featureAnalyzer = analyzer;
 		this._filterJobName = new ArrayList<String>(Arrays.asList(
@@ -50,6 +51,7 @@ public class EXCELParser implements Runnable{
 		this._crashDetailFile = crashDetailFile;
 		this._operations = operations;
 		this._components = components;
+		this._callstackDepth = callstackDepth;
 	}
 
 	@Override
@@ -129,7 +131,7 @@ public class EXCELParser implements Runnable{
 		CrashDetail detail = null;
 		Stack<CrashDetail> detailStack = new Stack<CrashDetail>();
 		
-		int index = rowIndex - 5;
+		int index = rowIndex - this._callstackDepth;
 		while (index < rowIndex) {
 			Row reasonRow = sheet.getRow(index);
 			++index;

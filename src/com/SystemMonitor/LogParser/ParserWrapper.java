@@ -43,13 +43,15 @@ public class ParserWrapper {
 	private FeatureAnalyzer _featureAnalyzer;
 	private String _logFilePath;
 	private String _crashDetailFile = "";
+	private int _callstackDepth;
 	private Hashtable<String, Integer> _operation;
 	private Hashtable<String, Integer> _component;
 	
-	public ParserWrapper(String logFilePath, String featureMappingFilePath, String crashFilePath){
-		_logFilePath = logFilePath;
+	public ParserWrapper(String logFilePath, String featureMappingFilePath, String crashFilePath, int callstackdepth){
 		_featureAnalyzer = new FeatureAnalyzer(featureMappingFilePath);
+		_logFilePath = logFilePath;
 		_crashDetailFile = crashFilePath;
+		_callstackDepth = callstackdepth;
 		_operation = new Hashtable<String,Integer>();
 		_component = new Hashtable<String,Integer>();
 	}
@@ -63,7 +65,7 @@ public class ParserWrapper {
 			if(file.getAbsolutePath().endsWith("xls"))
 				continue;
 			
-			EXCELParser parser = new EXCELParser(file, _featureAnalyzer, crashDetailFile, _operation, _component);
+			EXCELParser parser = new EXCELParser(file, _featureAnalyzer, crashDetailFile, _operation, _component, _callstackDepth);
 			parser.run();
 		}
 		crashDetailFile.close();

@@ -18,20 +18,23 @@ public class Program {
 		String featureMappingFilePath = config.getFeatureMappingFileLocation();
 		
 		try{
-			ParserWrapper csvParser = new ParserWrapper(logFilePath, featureMappingFilePath, config.getCrashDetailPath());
+			ParserWrapper csvParser = new ParserWrapper(logFilePath, featureMappingFilePath, config.getCrashDetailPath(), config.getCallStackDepth());
 //			csvParser.parseCSV_multithread();
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
 
 			csvParser.parseCSV_singlethread();
-			
+			System.out.println("parse finished");
+
 //			crashFromFPGrowth(config.getCrashDetailPath());
+//			System.out.println("FPGrowth statistics finished");
 			
 			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath());
-//			
-			String indexFilePath = config.getIndexLocation();
-			new LogIndexer(logFilePath, indexFilePath, csvParser).index();
+			System.out.println("prefix tree statistic finished");
+
+			new LogIndexer(logFilePath, config.getIndexLocation(), csvParser).index();
 			System.out.println("index finished");
+			
 		}catch(Exception e){
 			SystemMonitorException.logException(Thread.currentThread(), e);
 		}
