@@ -13,8 +13,11 @@ D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\crash
 statisticfile
 D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\logs\\statistic.txt
 
+target_console
+deliverable
+
 callstack_depth
-6
+5
 
 crash_threshold
-2
+10
