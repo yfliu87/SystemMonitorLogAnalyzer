@@ -142,10 +142,11 @@ public class EXCELParser implements Runnable{
 			if (cell == null)
 				continue;
 
+			String value = cell.getStringCellValue() + " - ";
 			Cell componentCell = reasonRow.getCell(LogColumnDefinition.COMPONENT.ordinal());
 			Cell operationCell = reasonRow.getCell(LogColumnDefinition.OPERATION.ordinal());
 			
-			String value = (componentCell!=null) ? componentCell.getStringCellValue() : "";
+			value += (componentCell!=null) ? componentCell.getStringCellValue() : "";
 			value += (operationCell != null) ? " - " + operationCell.getStringCellValue() : "";
 
 			detail = new CrashDetail();
