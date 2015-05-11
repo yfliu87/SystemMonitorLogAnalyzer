@@ -71,7 +71,7 @@ public class CallstackAnalyzer {
 			updateQueue(levelNode, order(this._root.getChildTree()));
 
 			int levelCount = levelNode.size();
-			int depth = 1;
+			int depth = 0;
 
 			while (!levelNode.isEmpty()) {
 
@@ -82,20 +82,35 @@ public class CallstackAnalyzer {
 				});
 				
 				levelCount = levelNode.size();
-				fileWriter.write("\r\n\r\nStep Count: " + depth);
+				if (depth == 0)
+					fileWriter.write("\r\n\r\nCrash Console Detail: ");
+				else
+					fileWriter.write("\r\n\r\nStep Count: " + depth);
 
 				while(levelCount != 0){
 
 					CallstackTree node = levelNode.remove(0);
 
-					if (node.getOperationCount() >= crashThreshold && node.getOperation().toLowerCase().startsWith(targetConsole)){
-						fileWriter.write("\r\n\tCrash Count: "
-								+ node.getOperationCount() + " --- operation: " + node.getOperation());
+					if (depth == 0){
+						if (node.getOperation().toLowerCase().startsWith(targetConsole)){
+							fileWriter.write("\r\n\tCrash Count: "
+									+ node.getOperationCount() + "\r Console: " + node.getOperation());
+							
+							for (String subtree : node.getChildTree().keySet()) {
+								levelNode.add(node.getChildTree().get(subtree));
+							}
+						}
+					}else{
+						if (node.getOperationCount() >= crashThreshold && node.getOperation().toLowerCase().startsWith(targetConsole)){
+							fileWriter.write("\r\n\tCrash Count: "
+									+ node.getOperationCount() + " --- operation: " + node.getOperation());
 
-						for (String subtree : node.getChildTree().keySet()) {
-							levelNode.add(node.getChildTree().get(subtree));
+							for (String subtree : node.getChildTree().keySet()) {
+								levelNode.add(node.getChildTree().get(subtree));
+							}
 						}
 					}
+					
 					--levelCount;
 				}
 				++depth;

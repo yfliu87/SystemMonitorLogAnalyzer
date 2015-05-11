@@ -23,8 +23,8 @@ public class Program {
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
 
-//			csvParser.parseCSV_singlethread();
-//			System.out.println("parse finished");
+			csvParser.parseCSV_singlethread();
+			System.out.println("parse finished");
 
 //			crashFromFPGrowth(config.getCrashDetailPath());
 //			System.out.println("FPGrowth statistics finished");
@@ -32,8 +32,8 @@ public class Program {
 			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath(), config.getCrashThreshold(), config.getTargetConsole());
 			System.out.println("prefix tree statistic finished");
 
-//			new LogIndexer(logFilePath, config.getIndexLocation(), csvParser).index();
-//			System.out.println("index finished");
+			new LogIndexer(logFilePath, config.getIndexLocation(), csvParser).index();
+			System.out.println("index finished");
 			
 		}catch(Exception e){
 			SystemMonitorException.logException(Thread.currentThread(), e);

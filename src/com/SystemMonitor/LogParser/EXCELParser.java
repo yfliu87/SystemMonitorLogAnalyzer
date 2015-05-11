@@ -132,7 +132,7 @@ public class EXCELParser implements Runnable{
 		Stack<CrashDetail> detailStack = new Stack<CrashDetail>();
 		
 		int index = rowIndex - this._callstackDepth;
-		while (index < rowIndex) {
+		while (index <= rowIndex) {
 			Row reasonRow = sheet.getRow(index);
 			++index;
 			if (reasonRow == null)
@@ -142,6 +142,29 @@ public class EXCELParser implements Runnable{
 			if (cell == null)
 				continue;
 
+			detail = new CrashDetail();
+			
+			if (index - 1 == rowIndex){
+				detail.updateCrashProcessName(cell.getStringCellValue());
+				
+				Cell contextCell = reasonRow.getCell(LogColumnDefinition.CONTEXT.ordinal());
+				if (contextCell != null){
+					
+					String[] msgs = contextCell.getStringCellValue().split(";");
+					
+					for (String s : msgs){
+						if (s.startsWith("CustomMessage")){
+							detail.updateDetailMessage(s.contains("Key Guid") ? 
+									s.substring(0, s.indexOf("Key Guid")) : s);
+								
+							break;
+						}
+					}
+				}
+				
+				detailStack.push(detail);
+				break;
+			}
 			String value = cell.getStringCellValue() + " - ";
 			Cell componentCell = reasonRow.getCell(LogColumnDefinition.COMPONENT.ordinal());
 			Cell operationCell = reasonRow.getCell(LogColumnDefinition.OPERATION.ordinal());
@@ -149,7 +172,6 @@ public class EXCELParser implements Runnable{
 			value += (componentCell!=null) ? componentCell.getStringCellValue() : "";
 			value += (operationCell != null) ? " - " + operationCell.getStringCellValue() : "";
 
-			detail = new CrashDetail();
 			detail.updateProcessOperation(value);
 
 			value = "";
