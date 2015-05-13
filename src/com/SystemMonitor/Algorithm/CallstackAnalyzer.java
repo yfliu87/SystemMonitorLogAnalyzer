@@ -98,16 +98,7 @@ public class CallstackAnalyzer {
 						}
 					}else{
 						if (node.getOperationCount() >= crashThreshold && node.getOperation().toLowerCase().startsWith(targetConsole)){
-							String msg = node.getOperation();
-							String crashConsole = msg.substring(0, msg.indexOf(";"));
-							String operation = msg.substring(msg.indexOf(";") + 1);
-							
-							String output = "\r\n\tCrash Count: " + node.getOperationCount();
-							output += "\tCrash Console: " + crashConsole;
-							output += "\tOperations: " + operation;
-							
-							fileWriter.write(output);
-							//fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + " --- operation: " + node.getOperation());
+							fileWriter.write(buildOutputMessage(node));
 
 							levelNode.addAll(node.getChildTree().values());
 						}
@@ -128,6 +119,19 @@ public class CallstackAnalyzer {
 				}
 			}
 		}
+	}
+
+	private String buildOutputMessage(CallstackTree node) {
+		String msg = node.getOperation();
+		String crashConsole = msg.substring(0, msg.indexOf(";"));
+		String operation = msg.substring(msg.indexOf(";") + 1);
+
+		StringBuilder ret = new StringBuilder();
+		ret.append("\r\n\tCrash Count: " + node.getOperationCount());
+		ret.append("\tCrash Console: " + crashConsole);
+		ret.append("\tOperations: " + operation);
+
+		return ret.toString();
 	}
 
 	private void updateQueue(List<CallstackTree> levelNode, List<Entry<String, CallstackTree>> orderedTree) {
