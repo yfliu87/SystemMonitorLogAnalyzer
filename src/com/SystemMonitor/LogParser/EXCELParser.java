@@ -154,9 +154,19 @@ public class EXCELParser implements Runnable{
 					
 					for (String s : msgs){
 						if (s.startsWith("CustomMessage")){
-							detail.updateDetailMessage(s.contains("Key Guid") ? 
-									s.substring(0, s.indexOf("Key Guid")) : s);
-								
+							
+							if (s.contains("Key Guid"))
+								s = s.substring(0, s.indexOf("Key Guid") - 1);
+							else if (s.contains("Row Index"))
+								s = s.substring(0, s.indexOf("Row Index") - 1);
+							else if (s.contains("Row index"))
+								s = s.substring(0, s.indexOf("Row index") - 1);
+							else if (s.contains("<ProcessID>"))
+								s = s.substring(0, s.indexOf("<ProcessID>") - 1);
+							else if (s.contains("Line Number"))
+								s = s.substring(0, s.indexOf("Line Number") - 1);
+							
+							detail.updateDetailMessage(s) ;
 							break;
 						}
 					}

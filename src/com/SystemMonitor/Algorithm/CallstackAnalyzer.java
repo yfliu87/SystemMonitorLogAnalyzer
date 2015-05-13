@@ -83,9 +83,9 @@ public class CallstackAnalyzer {
 				
 				levelCount = levelNode.size();
 				if (depth == 0)
-					fileWriter.write("\r\n\r\nCrash Console Detail: ");
+					fileWriter.write("\r\nCrash Console Detail: ");
 				else
-					fileWriter.write("\r\n\r\nStep Count: " + depth);
+					fileWriter.write("\r\n\r\nCallstack Depth: " + depth);
 
 				while(levelCount != 0){
 
@@ -94,7 +94,7 @@ public class CallstackAnalyzer {
 					if (depth == 0){
 						if (node.getOperation().toLowerCase().startsWith(targetConsole)){
 							fileWriter.write("\r\n\tCrash Count: "
-									+ node.getOperationCount() + "\r Console: " + node.getOperation());
+									+ node.getOperationCount() + "\tConsole: " + node.getOperation());
 							
 							for (String subtree : node.getChildTree().keySet()) {
 								levelNode.add(node.getChildTree().get(subtree));
@@ -102,8 +102,16 @@ public class CallstackAnalyzer {
 						}
 					}else{
 						if (node.getOperationCount() >= crashThreshold && node.getOperation().toLowerCase().startsWith(targetConsole)){
-							fileWriter.write("\r\n\tCrash Count: "
-									+ node.getOperationCount() + " --- operation: " + node.getOperation());
+							String msg = node.getOperation();
+							String crashConsole = msg.substring(0, msg.indexOf(";"));
+							String operation = msg.substring(msg.indexOf(";") + 1);
+							
+							String output = "\r\n\tCrash Count: " + node.getOperationCount();
+							output += "\tCrash Console: " + crashConsole;
+							output += "\tOperations: " + operation;
+							
+							fileWriter.write(output);
+							//fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + " --- operation: " + node.getOperation());
 
 							for (String subtree : node.getChildTree().keySet()) {
 								levelNode.add(node.getChildTree().get(subtree));
