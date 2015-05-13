@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.SystemMonitor.Util.SystemMonitorException;
 
@@ -66,7 +67,7 @@ public class CallstackAnalyzer {
 		try {
 			fileWriter = new BufferedWriter(new FileWriter(statisticFile));
 			
-			ArrayList<CallstackTree> levelNode = new ArrayList<CallstackTree>();
+			List<CallstackTree> levelNode = new ArrayList<CallstackTree>();
 			
 			updateQueue(levelNode, order(this._root.getChildTree()));
 
@@ -75,11 +76,9 @@ public class CallstackAnalyzer {
 
 			while (!levelNode.isEmpty()) {
 
-				Collections.sort(levelNode, new Comparator<CallstackTree>(){
-					public int compare(CallstackTree t1, CallstackTree t2){
-						return t2.getOperationCount() - t1.getOperationCount();
-					}
-				});
+				levelNode = levelNode.parallelStream().
+						sorted((a,b) -> b.getOperationCount() - a.getOperationCount()).
+						collect(Collectors.toList());
 				
 				levelCount = levelNode.size();
 				if (depth == 0)
@@ -93,12 +92,9 @@ public class CallstackAnalyzer {
 
 					if (depth == 0){
 						if (node.getOperation().toLowerCase().startsWith(targetConsole)){
-							fileWriter.write("\r\n\tCrash Count: "
-									+ node.getOperationCount() + "\tConsole: " + node.getOperation());
+							fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + "\tConsole: " + node.getOperation());
 							
-							for (String subtree : node.getChildTree().keySet()) {
-								levelNode.add(node.getChildTree().get(subtree));
-							}
+							levelNode.addAll(node.getChildTree().values());
 						}
 					}else{
 						if (node.getOperationCount() >= crashThreshold && node.getOperation().toLowerCase().startsWith(targetConsole)){
@@ -113,9 +109,7 @@ public class CallstackAnalyzer {
 							fileWriter.write(output);
 							//fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + " --- operation: " + node.getOperation());
 
-							for (String subtree : node.getChildTree().keySet()) {
-								levelNode.add(node.getChildTree().get(subtree));
-							}
+							levelNode.addAll(node.getChildTree().values());
 						}
 					}
 					
@@ -136,21 +130,15 @@ public class CallstackAnalyzer {
 		}
 	}
 
-	private void updateQueue(ArrayList<CallstackTree> levelNode, List<Entry<String, CallstackTree>> orderedTree) {
-		for (Entry<String, CallstackTree> node : orderedTree){
-			levelNode.add(node.getValue());
-		}	
+	private void updateQueue(List<CallstackTree> levelNode, List<Entry<String, CallstackTree>> orderedTree) {
+		orderedTree.stream().forEach(e -> levelNode.add(e.getValue()));
 	}
 
 	private List<Entry<String, CallstackTree>> order(HashMap<String, CallstackTree> childTree) {
 		List<Entry<String, CallstackTree>> ret = new ArrayList<Entry<String, CallstackTree>>(childTree.entrySet());
 		
-		Collections.sort(ret, new Comparator<Entry<String, CallstackTree>>(){
-			public int compare(Entry<String, CallstackTree> t1, Entry<String, CallstackTree> t2){
-				return t2.getValue().getOperationCount() - t1.getValue().getOperationCount();
-			}
-		});
-		
-		return ret;
+		return ret.parallelStream().
+				sorted((a,b) -> b.getValue().getOperationCount() - a.getValue().getOperationCount()).
+				collect(Collectors.toList());
 	}
 }
