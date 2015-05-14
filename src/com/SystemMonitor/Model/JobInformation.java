@@ -11,7 +11,7 @@ import com.SystemMonitor.Util.DateHelper;
 
 public class JobInformation {
 
-private String jobName;
+	private String jobName;
 	private String wellName;
 	private String clientName;
 	private String workflow;
@@ -25,6 +25,7 @@ private String jobName;
 	private boolean isCrashed;
 	private List<String> crashedProcess;
 	private List<Stack<CrashDetail>> crashDetails;
+	private List<String> patchVersions;
 	
 	public void updateCrashDetails(Stack<CrashDetail> obj) {
 		crashDetails.add(obj);
@@ -33,8 +34,6 @@ private String jobName;
 	public List<Stack<CrashDetail>> getCrashDetails() {
 		return this.crashDetails;
 	}
-
-	private List<String> patchVersions;
 	
 	public JobInformation(){
 		crashedProcess = new ArrayList<String>();
@@ -231,7 +230,7 @@ private String jobName;
 	private String convertPatchVersion(List<String> patches) {
 		StringBuilder ret = new StringBuilder();
 		for (String patch : patches){
-			ret.append(PatchVersionDefinition.convert(patch));
+			ret.append(PatchVersionDefinition.stringToDigit(patch));
 			ret.append(",");
 		}
 		String temp = ret.toString();
@@ -239,9 +238,16 @@ private String jobName;
 	}
 
 	public String getCrashDetail() {
+		if (this.crashDetails.isEmpty())
+			return "";
+		
 		StringBuilder ret = new StringBuilder(256);
 		
 		for (Stack<CrashDetail> detailStack : crashDetails){
+			
+			ret.append(this.mwVersion == null ? "" + ";" : this.mwVersion + ";");
+			ret.append(this.patchVersions.isEmpty()? "" + ";" : PatchVersionDefinition.digitToString(this.patchVersions.get(0)) + ";");
+
 			while(!detailStack.isEmpty())
 				ret.append(detailStack.pop().toString() + ";");
 			
