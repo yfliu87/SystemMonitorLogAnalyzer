@@ -90,14 +90,8 @@ public class EXCELParser implements Runnable{
 				}
 				
 				if (isNewJob && jobStop(row)){
-					jobStopDate = readDateInfo(row);
-					jobInfo.setJobStopDate(jobStopDate);
-					jobInfo.setJobDuration(this.getJobDuration(jobInfo.getJobStartDate(), jobInfo.getJobStopDate()));
-					
-					this._crashDetailFile.write(jobInfo.getCrashDetail());
-
-					Set<String> featureFound = detectFeature(featureUsage);
-					updateJobInfo(jobInfo, jobs, featureFound, featureUsages, tools, toolsList);
+					updateNecessaryInfo(jobInfo, featureUsage, tools, jobs,
+							featureUsages, toolsList, row);
 					
 					isNewJob = false;
 				}
@@ -113,6 +107,11 @@ public class EXCELParser implements Runnable{
 						recordCrashInfo(row, jobInfo);
 						
 						traceback(sheet, row, jobInfo);
+						
+						if (jobStart(sheet.getRow(row.getRowNum() + 1))){
+							updateNecessaryInfo(jobInfo, featureUsage, tools, jobs, featureUsages, toolsList, row);
+							isNewJob = false;
+						}
 					}
 				}
 			}
@@ -124,6 +123,19 @@ public class EXCELParser implements Runnable{
 		} finally {
 			closeWorkbook(workbook);
 		}
+	}
+
+	private void updateNecessaryInfo(JobInformation jobInfo, Map<String, Set<String>> featureUsage, List<String> tools,
+			List<JobInformation> jobs, List<Map<String, Set<String>>> featureUsages,
+			List<Map<String, List<String>>> toolsList, Row row) throws IOException {
+		Calendar jobStopDate = readDateInfo(row);
+		jobInfo.setJobStopDate(jobStopDate);
+		jobInfo.setJobDuration(this.getJobDuration(jobInfo.getJobStartDate(), jobInfo.getJobStopDate()));
+		
+		this._crashDetailFile.write(jobInfo.getCrashDetail());
+
+		Set<String> featureFound = detectFeature(featureUsage);
+		updateJobInfo(jobInfo, jobs, featureFound, featureUsages, tools, toolsList);
 	}
 	
 	private void traceback(HSSFSheet sheet, Row row, JobInformation jobInfo) throws IOException {
@@ -303,8 +315,7 @@ public class EXCELParser implements Runnable{
 			} else if (value.startsWith("UnitSystem")) {
 				jobInfo.setUnitSystem(value.substring(value.indexOf("=") + 1));
 			} else if (value.startsWith("JobSize")) {
-				jobInfo.setJobSize(Double.parseDouble(value.substring(value
-						.indexOf("=") + 1)));
+				jobInfo.setJobSize(Double.parseDouble(value.substring(value.indexOf("=") + 1)));
 			} else if (value.startsWith("MWVersion")){
 				jobInfo.setMWVersion(value.substring(value.indexOf("=") + 1));
 			} else if (value.startsWith("Patch")){
