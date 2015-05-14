@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -173,10 +174,13 @@ public class LogIndexer{
 					doc.add(new Field(IndexField.CRASHED, jobInfo.isCrashed() ? "yes" : "no",
 								TextField.TYPE_STORED));
 
+					StringBuilder crashedProcesses = new StringBuilder();
 					for (String process : jobInfo.getCrashProcess()){
-						doc.add(new Field(IndexField.CRASHPROCESS, process,
-								TextField.TYPE_STORED));
+						crashedProcesses.append(process + ";");
+
 					}
+					doc.add(new Field(IndexField.CRASHPROCESS, crashedProcesses.toString(),
+							TextField.TYPE_STORED));
 					
 					if (toolstrings.containsKey(jobName)) {
 						List<String> toolstring = toolstrings.get(jobName);
@@ -345,7 +349,11 @@ public class LogIndexer{
 		candidate.setJobDuration(getDuration(document.get(IndexField.DURATION)));
 		candidate.setCrashed(document.get(IndexField.CRASHED).equals("yes"));
 		if (candidate.isCrashed()){
-			candidate.updateCrashProcess(document.get(IndexField.CRASHPROCESS));
+			String[] processes = document.get(IndexField.CRASHPROCESS).split(";");
+			
+			Arrays.asList(processes).stream().filter(e -> !e.isEmpty()).forEach(e -> candidate.updateCrashProcess(e));
+//			for (String process : processes)
+//				candidate.updateCrashProcess(process);
 		}
 		
 		return candidate;
