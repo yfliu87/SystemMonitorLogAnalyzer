@@ -125,7 +125,7 @@ public class LogIndexer{
 //					
 					List<String> patchVersion = jobInfo.getPatches();
 					for (String patch : patchVersion){
-						patch = PatchVersionDefinition.convert(patch);
+						patch = PatchVersionDefinition.stringToDigit(patch);
 						
 						doc.add(new StringField(IndexField.PATCHVERSION, 
 								isValidFieldCandidate(patch)?patch : "empty",
@@ -339,7 +339,7 @@ public class LogIndexer{
 
 		JobInformation candidate = new JobInformation();
 		candidate.setMWVersion(document.get(IndexField.MWVERSION));
-		candidate.updatePatchVersion(PatchVersionDefinition.convert(document.get(IndexField.PATCHVERSION)));
+		candidate.updatePatchVersion(PatchVersionDefinition.stringToDigit(document.get(IndexField.PATCHVERSION)));
 		candidate.setJobName(document.get(IndexField.JOB_NAME));
 		candidate.setClientName(document.get(IndexField.CLIENT_NAME));
 		candidate.setWellName(document.get(IndexField.WELL_NAME));

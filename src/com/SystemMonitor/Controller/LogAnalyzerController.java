@@ -35,7 +35,8 @@ public class LogAnalyzerController {
 	private LogIndexer _indexer;
 	private String _logFilePath;
 	private int _jobCount;
-	private String _configFilePath = "/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/config.txt";
+	//private String _configFilePath = "/home/web-dev/Documents/eclipse-javaee/SystemMonitorAnalyzer/config.txt";
+	private String _configFilePath = "D:\\NotBackedUp\\SystemMonitorLogAnalyzer\\SystemMonitorLogAnalyzer\\config.txt";
 
 	@RequestMapping(value = "/logAnalyzer", method = RequestMethod.GET)
 	public ModelAndView logAnalyzerHandler(Model model) {
@@ -386,7 +387,7 @@ public class LogAnalyzerController {
 
 	private List<JobInformation> filterByPatch(List<JobInformation> retList, String patchVersion) {
 		
-		String convertedPatch = PatchVersionDefinition.convert(patchVersion);
+		String convertedPatch = PatchVersionDefinition.stringToDigit(patchVersion);
 		List<JobInformation> ret = new ArrayList<JobInformation>();
 		
 		for (JobInformation job : retList){
@@ -477,7 +478,7 @@ public class LogAnalyzerController {
 	}
 		
 	private String getPatchVersion(String patch) {
-		return PatchVersionDefinition.convert(patch);
+		return PatchVersionDefinition.stringToDigit(patch);
 	}
 
 	private String readDigit(String duration) {

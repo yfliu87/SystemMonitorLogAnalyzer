@@ -18,7 +18,7 @@ public class PatchVersionDefinition {
 	public static final List<String> patches = new ArrayList<String>(
 			Arrays.asList("4.0.9163", "13393","18214","22480","26570","5.0.29600","5.1.33858"));
 	
-	public static String convert(String input){
+	public static String stringToDigit(String input){
 		
 		if (input == null)
 			return "empty";
@@ -37,5 +37,26 @@ public class PatchVersionDefinition {
 			return SP12014;
 		else
 			return input;
+	}
+	
+	public static String digitToString(String digit){
+		if (digit == null)
+			return "";
+		else if (digit.contains("13075"))
+			return "2013 DnM SP1";
+		else if (digit.contains("13393"))
+			return "2013 WL SP1";
+		else if (digit.contains("18214"))
+			return "2013 SP2";
+		else if (digit.contains("22480"))
+			return "2013 SP3";
+		else if (digit.contains("26570"))
+			return "2013 SP4";
+		else if (digit.contains("33858"))
+			return "2014 SP1";
+		else 
+			return "";
+					
+		
 	}
 }
