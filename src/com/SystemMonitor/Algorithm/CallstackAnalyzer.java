@@ -82,7 +82,7 @@ public class CallstackAnalyzer {
 				
 				levelCount = levelNode.size();
 				if (depth == 0)
-					fileWriter.write("\r\nCrash Console Detail: ");
+					fileWriter.write("\r\nAll Crash Console : ");
 				else
 					fileWriter.write("\r\n\r\nCallstack Depth: " + depth);
 
@@ -91,13 +91,13 @@ public class CallstackAnalyzer {
 					CallstackTree node = levelNode.remove(0);
 
 					if (depth == 0){
-						if (node.getOperation().toLowerCase().startsWith(targetConsole)){
-							fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + "\tConsole: " + node.getOperation());
+						//if (node.getOperation().toLowerCase().startsWith(targetConsole)){
+							fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + "\tVersion: " + node.getOperation());
 							
 							levelNode.addAll(node.getChildTree().values());
-						}
+						//}
 					}else{
-						if (node.getOperationCount() >= crashThreshold && node.getOperation().toLowerCase().startsWith(targetConsole)){
+						if (desiredOperation(node, crashThreshold, targetConsole)){
 							fileWriter.write(buildOutputMessage(node));
 
 							levelNode.addAll(node.getChildTree().values());
@@ -106,6 +106,9 @@ public class CallstackAnalyzer {
 					
 					--levelCount;
 				}
+				if (depth == 0)
+					fileWriter.write("\r\n\r\n" + targetConsole + " details: ");
+				
 				++depth;
 			}
 		} catch (IOException e) {
@@ -121,15 +124,37 @@ public class CallstackAnalyzer {
 		}
 	}
 
+	private boolean desiredOperation(CallstackTree node, int crashThreshold, String targetConsole) {
+		String targetString = node.getOperation().toLowerCase();
+		targetString = targetString.substring(targetString.indexOf(";") + 1);
+		return node.getOperationCount() >= crashThreshold && targetString.startsWith(targetConsole);
+	}
+
+//	private String buildOutputMessage(CallstackTree node) {
+//		String msg = node.getOperation();
+//		String crashConsole = msg.substring(0, msg.indexOf(";"));
+//		String operation = msg.substring(msg.indexOf(";") + 1);
+//
+//		StringBuilder ret = new StringBuilder();
+//		ret.append("\r\n\tCrash Count: " + node.getOperationCount());
+//		ret.append("\tCrash Console: " + crashConsole);
+//		ret.append("\tOperations: " + operation);
+//
+//		return ret.toString();
+//	}
+	
 	private String buildOutputMessage(CallstackTree node) {
 		String msg = node.getOperation();
-		String crashConsole = msg.substring(0, msg.indexOf(";"));
-		String operation = msg.substring(msg.indexOf(";") + 1);
-
+		String[] msgs = msg.split(";");
+		
 		StringBuilder ret = new StringBuilder();
 		ret.append("\r\n\tCrash Count: " + node.getOperationCount());
-		ret.append("\tCrash Console: " + crashConsole);
-		ret.append("\tOperations: " + operation);
+		ret.append("\tVersion: " + msgs[0]);
+		ret.append("\tCrash Console: " + msgs[1]);
+		
+		ret.append("\tOperations: " );
+		for (int i = 2; i < msgs.length; i++)
+			ret.append(msgs[i] + ";");
 
 		return ret.toString();
 	}
