@@ -15,9 +15,6 @@ public class PatchVersionDefinition {
 	public static final String Main2014 = "5.0.29600";
 	public static final String SP12014 = "5.1.33858";
 	
-	public static final List<String> patches = new ArrayList<String>(
-			Arrays.asList("4.0.9163", "13393","18214","22480","26570","5.0.29600","5.1.33858"));
-	
 	public static String stringToDigit(String input){
 		
 		if (input == null)
