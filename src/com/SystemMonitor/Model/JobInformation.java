@@ -245,8 +245,8 @@ public class JobInformation {
 		
 		for (Stack<CrashDetail> detailStack : crashDetails){
 			
-			ret.append(this.mwVersion == null ? "" + ";" : this.mwVersion + ";");
-			ret.append(this.patchVersions.isEmpty()? "" + ";" : PatchVersionDefinition.digitToString(this.patchVersions.get(0)) + ";");
+			ret.append(this.mwVersion == null ? "" + ";" : MWVersionDefinition.digitToString(this.mwVersion));
+			ret.append(getPatch());
 
 			while(!detailStack.isEmpty())
 				ret.append(detailStack.pop().toString() + ";");
@@ -254,5 +254,11 @@ public class JobInformation {
 			ret.append("\r\n");
 		}
 		return ret.toString();
+	}
+
+	private String getPatch() {
+		return this.patchVersions.isEmpty()? "" + ";" : 
+			  (this.patchVersions.get(0).isEmpty()||patchVersions.get(0).isEmpty()? "" + ";" : 
+				  " - " + PatchVersionDefinition.digitToString(this.patchVersions.get(0)) + ";");
 	}
 }
