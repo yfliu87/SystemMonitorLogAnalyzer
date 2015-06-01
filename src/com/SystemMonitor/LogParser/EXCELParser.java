@@ -108,7 +108,7 @@ public class EXCELParser implements Runnable{
 						
 						traceback(sheet, row, jobInfo);
 						
-						if (jobStart(sheet.getRow(row.getRowNum() + 1))){
+						if (row.getRowNum() + 1 <= sheet.getLastRowNum() && jobStart(sheet.getRow(row.getRowNum() + 1))){
 							updateNecessaryInfo(jobInfo, featureUsage, tools, jobs, featureUsages, toolsList, row);
 							isNewJob = false;
 						}
@@ -127,96 +127,101 @@ public class EXCELParser implements Runnable{
 
 	private void updateNecessaryInfo(JobInformation jobInfo, Map<String, Set<String>> featureUsage, List<String> tools,
 			List<JobInformation> jobs, List<Map<String, Set<String>>> featureUsages,
-			List<Map<String, List<String>>> toolsList, Row row) throws IOException {
+			List<Map<String, List<String>>> toolsList, Row row) throws Exception {
 		Calendar jobStopDate = readDateInfo(row);
 		jobInfo.setJobStopDate(jobStopDate);
 		jobInfo.setJobDuration(this.getJobDuration(jobInfo.getJobStartDate(), jobInfo.getJobStopDate()));
-		
-		this._crashDetailFile.write(jobInfo.getCrashDetail());
 
 		Set<String> featureFound = detectFeature(featureUsage);
 		updateJobInfo(jobInfo, jobs, featureFound, featureUsages, tools, toolsList);
 	}
 	
 	private void traceback(HSSFSheet sheet, Row row, JobInformation jobInfo) throws IOException {
-		int rowIndex = row.getRowNum();
-		CrashDetail detail = null;
-		Stack<CrashDetail> detailStack = new Stack<CrashDetail>();
-		
-		int index = rowIndex - this._callstackDepth;
-		while (index <= rowIndex) {
-			Row reasonRow = sheet.getRow(index);
-			++index;
-			if (reasonRow == null)
-				continue;
-		
-			Cell cell = reasonRow.getCell(LogColumnDefinition.PROCESS.ordinal());
-			if (cell == null)
-				continue;
+		try{
+			int rowIndex = row.getRowNum();
+			CrashDetail detail = null;
+			Stack<CrashDetail> detailStack = new Stack<CrashDetail>();
 
-			detail = new CrashDetail();
-			
-			if (index - 1 == rowIndex){
-				detail.updateCrashProcessName(cell.getStringCellValue());
-				
-				Cell contextCell = reasonRow.getCell(LogColumnDefinition.CONTEXT.ordinal());
-				if (contextCell != null){
-					
-					String[] msgs = contextCell.getStringCellValue().split(";");
-					
-					for (String s : msgs){
-						if (s.startsWith("CustomMessage")){
-							
-							if (s.contains("Key Guid"))
-								s = s.substring(0, s.indexOf("Key Guid") - 1);
-							else if (s.contains("Row Index"))
-								s = s.substring(0, s.indexOf("Row Index") - 1);
-							else if (s.contains("Row index"))
-								s = s.substring(0, s.indexOf("Row index") - 1);
-							else if (s.contains("<ProcessID>"))
-								s = s.substring(0, s.indexOf("<ProcessID>") - 1);
-							else if (s.contains("Line Number"))
-								s = s.substring(0, s.indexOf("Line Number") - 1);
-							
-							detail.updateDetailMessage(s) ;
-							break;
+			int index = rowIndex - this._callstackDepth;
+			while (index <= rowIndex) {
+				Row reasonRow = sheet.getRow(index);
+				++index;
+				if (reasonRow == null)
+					continue;
+
+				Cell cell = reasonRow.getCell(LogColumnDefinition.PROCESS.ordinal());
+				if (cell == null)
+					continue;
+
+				detail = new CrashDetail();
+
+				if (index - 1 == rowIndex) {
+					detail.updateCrashProcessName(cell.getStringCellValue());
+
+					Cell contextCell = reasonRow
+							.getCell(LogColumnDefinition.CONTEXT.ordinal());
+					if (contextCell != null) {
+
+						String[] msgs = contextCell.getStringCellValue().split(";");
+
+						for (String s : msgs) {
+							if (s.startsWith("CustomMessage")) {
+
+								if (s.contains("Key Guid"))
+									s = s.substring(0, s.indexOf("Key Guid") - 1);
+								else if (s.contains("Row Index"))
+									s = s.substring(0, s.indexOf("Row Index") - 1);
+								else if (s.contains("Row index"))
+									s = s.substring(0, s.indexOf("Row index") - 1);
+								else if (s.contains("<ProcessID>"))
+									s = s.substring(0, s.indexOf("<ProcessID>") - 1);
+								else if (s.contains("Line Number"))
+									s = s.substring(0, s.indexOf("Line Number") - 1);
+
+								detail.updateDetailMessage(s);
+								break;
+							}
 						}
 					}
+
+					detailStack.push(detail);
+					break;
 				}
-				
+				String value = cell.getStringCellValue() + " - ";
+				Cell componentCell = reasonRow.getCell(LogColumnDefinition.COMPONENT.ordinal());
+				Cell operationCell = reasonRow.getCell(LogColumnDefinition.OPERATION.ordinal());
+
+				value += (componentCell != null) ? componentCell.getStringCellValue() : "";
+				value += (operationCell != null) ? " - " + operationCell.getStringCellValue() : "";
+
+				detail.updateProcessOperation(value);
+
+				value = "";
+				Cell contextCell = reasonRow.getCell(LogColumnDefinition.CONTEXT.ordinal());
+				if (contextCell != null)
+					value = contextCell.getStringCellValue();
+
+				if (!value.equals("")) {
+					String component = null;
+					if (value.contains("ComponentCode"))
+						component = value.substring(value.indexOf("ComponentCode"));
+
+					String target = "";
+					if (component != null && component.contains(";"))
+						target = component.substring(0, component.indexOf(";"));
+
+					detail.updateComponent(target);
+
+					updatePool(componentCell.getStringCellValue(),
+							operationCell.getStringCellValue(), target);
+				}
 				detailStack.push(detail);
-				break;
 			}
-			String value = cell.getStringCellValue() + " - ";
-			Cell componentCell = reasonRow.getCell(LogColumnDefinition.COMPONENT.ordinal());
-			Cell operationCell = reasonRow.getCell(LogColumnDefinition.OPERATION.ordinal());
-			
-			value += (componentCell!=null) ? componentCell.getStringCellValue() : "";
-			value += (operationCell != null) ? " - " + operationCell.getStringCellValue() : "";
+			jobInfo.updateCrashDetails(detailStack);
 
-			detail.updateProcessOperation(value);
-
-			value = "";
-			Cell contextCell = reasonRow.getCell(LogColumnDefinition.CONTEXT.ordinal());
-			if (contextCell != null)
-				value = contextCell.getStringCellValue();
-			
-			if (!value.equals("")){
-				String component = null;
-				if (value.contains("ComponentCode"))
-					component = value.substring(value.indexOf("ComponentCode"));
-				
-				String target = "";
-				if (component != null && component.contains(";"))
-					target = component.substring(0, component.indexOf(";"));
-			
-				detail.updateComponent(target);
-				
-				updatePool(componentCell.getStringCellValue(), operationCell.getStringCellValue(), target);
-			}
-			detailStack.push(detail);
+		}catch(Exception e){
+			System.out.println(e.getMessage());
 		}
-		jobInfo.updateCrashDetails(detailStack);	
 	}
 
 	private void updatePool(String process, String operation, String component) {
@@ -240,6 +245,9 @@ public class EXCELParser implements Runnable{
 		if (cell != null){
 			String crashProcess = cell.getStringCellValue();
 			
+			if (crashProcess.isEmpty())
+				return;
+			
 			if (crashProcess.startsWith("Rig Floor") && crashProcess.contains("-"))
 				crashProcess = crashProcess.substring(0, crashProcess.lastIndexOf("-") - 1);
 			
@@ -251,7 +259,7 @@ public class EXCELParser implements Runnable{
 
 	private void updateJobInfo(JobInformation jobInfo, List<JobInformation> jobs, 
 			Set<String> featureFound, List<Map<String, Set<String>>> featureUsages, 
-			List<String> tools, List<Map<String, List<String>>> toolsList) {
+			List<String> tools, List<Map<String, List<String>>> toolsList) throws Exception {
 		
 		if (_filterJobName.contains(jobInfo.getJobName()) || jobInfo.isSimulation() ||
 				(jobInfo.getWorkflow().equals("D&M") && (jobInfo.getJobDuration() < 1.0 || jobInfo.getJobDuration() > 2500.0)) ||
@@ -411,9 +419,9 @@ public class EXCELParser implements Runnable{
 			List<Map<String, Set<String>>> featureUsages,
 			List<Map<String, List<String>>> toolsList) {
 		
+
 		FileOutputStream fileOut = null;
 		try {
-
 			Sheet summarySheet = workbook.getSheet(LogSheet.JOB_SUMMARY);
 			if (summarySheet != null) {
 				workbook.removeSheetAt(workbook.getSheetIndex(summarySheet));
@@ -440,6 +448,7 @@ public class EXCELParser implements Runnable{
 			fileOut = new FileOutputStream(targetFile);
 			workbook.write(fileOut);
 		} catch (Exception e) {
+			System.out.println("updateSummary exception");
 			SystemMonitorException.logException(Thread.currentThread(), e, this._file);
 		} finally {
 			if (fileOut != null) {
@@ -452,7 +461,7 @@ public class EXCELParser implements Runnable{
 		}
 	}
 
-	private void updateJobInfo(Sheet newSheet, List<JobInformation> jobs) {
+	private void updateJobInfo(Sheet newSheet, List<JobInformation> jobs) throws IOException {
 		setValue(newSheet, 0, Cell.CELL_TYPE_STRING, jobs.size() + "_jobs");
 		
 		int baseRowIndex = 1;
@@ -473,6 +482,8 @@ public class EXCELParser implements Runnable{
 			setValue(newSheet, baseRowIndex + JobSummaryRowDefinition.CRASHED.ordinal(), Cell.CELL_TYPE_STRING, info.isCrashed()?"crashed" : "not crashed");
 			
 			if (info.isCrashed()){
+				this._crashDetailFile.write(info.getCrashDetail());
+
 				setCrashValues(newSheet, baseRowIndex + JobSummaryRowDefinition.CRASHED.ordinal(), 1, Cell.CELL_TYPE_STRING, info.getCrashProcess());
 			}
 			baseRowIndex += JobSummaryRowDefinition.CRASHED.ordinal() + 2;
@@ -546,8 +557,7 @@ public class EXCELParser implements Runnable{
 		}
 	}
 	
-	private void setCrashValues(Sheet newSheet, int rowIndex, int cellStartIndex,
-			int cellTypeString, List<String> crashes) {
+	private void setCrashValues(Sheet newSheet, int rowIndex, int cellStartIndex, int cellTypeString, List<String> crashes) {
 		Row targetRow = newSheet.getRow(rowIndex);
 		for (String crashe : crashes){
 			try{
@@ -571,10 +581,5 @@ public class EXCELParser implements Runnable{
 				SystemMonitorException.logException(Thread.currentThread(), e);
 			}
 		}
-	}
-
-	public void filter(String filter) {
-		// TODO Auto-generated method stub
-		
 	}
 }
