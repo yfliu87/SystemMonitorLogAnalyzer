@@ -258,7 +258,7 @@ public class JobInformation {
 
 	private String getPatch() {
 		return this.patchVersions.isEmpty()? "" + ";" : 
-			  (this.patchVersions.get(0).isEmpty()||patchVersions.get(0).isEmpty()? "" + ";" : 
-				  " - " + PatchVersionDefinition.digitToString(this.patchVersions.get(0)) + ";");
+			  (PatchVersionDefinition.digitToString(this.patchVersions.get(0)).isEmpty()?  
+			   "" + ";" : " - " + PatchVersionDefinition.digitToString(this.patchVersions.get(0)) + ";" );
 	}
 }
