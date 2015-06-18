@@ -46,6 +46,8 @@ public class ConfigHelper {
 							filePathMap.put("crash_threshold", bReader.readLine());
 						} else if (msg.indexOf("target_console") != -1){
 							filePathMap.put("target_console", bReader.readLine());
+						} else if (msg.indexOf("target_version") != -1){
+							filePathMap.put("target_version", bReader.readLine());
 						}
 					}
 			} catch (IOException e) {
@@ -105,5 +107,9 @@ public class ConfigHelper {
 	
 	public String getTargetConsole(){
 		return this.filePathMap.get("target_console");
+	}
+
+	public String getTargetVersion() {
+		return this.filePathMap.get("target_version");
 	}
 }
