@@ -18,9 +18,11 @@ import com.SystemMonitor.Util.SystemMonitorException;
 public class CallstackAnalyzer {
 
 	private CallstackTree _root;
+	private String _targetVersion;
 	
-	public CallstackAnalyzer(){
+	public CallstackAnalyzer(String targetVersion){
 		this._root = new CallstackTree("null");
+		this._targetVersion = targetVersion;
 	}
 
 	public void buildTree(String crashDetailPath) {
@@ -30,7 +32,8 @@ public class CallstackAnalyzer {
 
 			String message = null;
 			while((message = br.readLine()) != null){
-				buildTreeRecursively(message, this._root.getChildTree(), "");
+				if (desiredVersion(message, _targetVersion))
+					buildTreeRecursively(message, this._root.getChildTree(), "");
 			}
 			
 		} catch (IOException e) {
@@ -44,6 +47,10 @@ public class CallstackAnalyzer {
 				}
 			}
 		}
+	}
+
+	private boolean desiredVersion(String message, String targetVersion) {
+		return message.substring(0, message.indexOf(";")).contains(targetVersion);
 	}
 
 	private void buildTreeRecursively(String message, HashMap<String, CallstackTree> childTree, String pre) {
@@ -84,7 +91,7 @@ public class CallstackAnalyzer {
 				if (depth == 0)
 					fileWriter.write("\r\nAll Crash Console : ");
 				else
-					fileWriter.write("\r\n\r\nCallstack Depth: " + depth);
+					fileWriter.write("\r\n\r\nOperationStack Depth: " + depth);
 
 				while(levelCount != 0){
 
@@ -98,7 +105,7 @@ public class CallstackAnalyzer {
 						//}
 					}else{
 						if (desiredOperation(node, crashThreshold, targetConsole)){
-							fileWriter.write(buildOutputMessage(node));
+							fileWriter.write(buildOutputMessage(node, depth));
 
 							levelNode.addAll(node.getChildTree().values());
 						}
@@ -143,19 +150,24 @@ public class CallstackAnalyzer {
 //		return ret.toString();
 //	}
 	
-	private String buildOutputMessage(CallstackTree node) {
+	private String buildOutputMessage(CallstackTree node, int depth) {
 		String msg = node.getOperation();
 		String[] msgs = msg.split(";");
 		
 		StringBuilder ret = new StringBuilder();
 		ret.append("\r\n\tCrash Count: " + node.getOperationCount());
-		ret.append("\tVersion: " + msgs[0]);
-		ret.append("\tCrash Console: " + msgs[1]);
 		
-		ret.append("\tOperations: " );
-		for (int i = 2; i < msgs.length; i++)
-			ret.append(msgs[i] + ";");
-
+		if (depth == 1){
+			ret.append("\tVersion: " + msgs[0]);
+			ret.append("\tCrash Console: " + msgs[1]);
+		}
+		
+		if (depth > 1){
+			ret.append("\r\n\t\tOperations: " );
+			for (int i = 1; i < msgs.length; i++)
+				ret.append(msgs[i] + "\r\n\t\t\t\t\t");
+		}
+		
 		return ret.toString();
 	}
 
