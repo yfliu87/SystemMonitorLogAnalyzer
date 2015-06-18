@@ -18,11 +18,11 @@ import com.SystemMonitor.Util.SystemMonitorException;
 public class CallstackAnalyzer {
 
 	private CallstackTree _root;
-	private String _targetVersion;
+	private List<String> _targetVersion;
 	
-	public CallstackAnalyzer(String targetVersion){
+	public CallstackAnalyzer(List<String> targetVersion){
 		this._root = new CallstackTree("null");
-		this._targetVersion = targetVersion;
+		this._targetVersion = new ArrayList<String>(targetVersion);
 	}
 
 	public void buildTree(String crashDetailPath) {
@@ -32,7 +32,7 @@ public class CallstackAnalyzer {
 
 			String message = null;
 			while((message = br.readLine()) != null){
-				if (desiredVersion(message, _targetVersion))
+				if (desiredVersion(message))
 					buildTreeRecursively(message, this._root.getChildTree(), "");
 			}
 			
@@ -49,8 +49,15 @@ public class CallstackAnalyzer {
 		}
 	}
 
-	private boolean desiredVersion(String message, String targetVersion) {
-		return message.substring(0, message.indexOf(";")).contains(targetVersion);
+	private boolean desiredVersion(String message) {
+		String msg = message.substring(0, message.indexOf(";"));
+		
+		for (String version : this._targetVersion){
+			if (msg.contains(version))
+				return true;
+		}
+		
+		return false;
 	}
 
 	private void buildTreeRecursively(String message, HashMap<String, CallstackTree> childTree, String pre) {
@@ -69,66 +76,77 @@ public class CallstackAnalyzer {
 		buildTreeRecursively(message.substring(message.indexOf(";") + 1), childTree.get(current).getChildTree(), current);
 	}
 
-	public void printResult(String statisticFile, int crashThreshold, String targetConsole) {
+	public void printResult(String statisticFilePath, int crashThreshold, List<String> targetConsoles) {
 		BufferedWriter fileWriter = null;
-		try {
-			fileWriter = new BufferedWriter(new FileWriter(statisticFile));
 			
-			List<CallstackTree> levelNode = new ArrayList<CallstackTree>();
-			
-			updateQueue(levelNode, order(this._root.getChildTree()));
+		for (String targetConsole : targetConsoles) {
+			for (String version : this._targetVersion) {
+				try {
+					fileWriter = getWriter(statisticFilePath, targetConsole, version);
 
-			int levelCount = levelNode.size();
-			int depth = 0;
+					List<CallstackTree> levelNode = new ArrayList<CallstackTree>();
 
-			while (!levelNode.isEmpty()) {
+					updateQueue(levelNode, order(this._root.getChildTree(), version));
 
-				levelNode = levelNode.parallelStream().
-						sorted((a,b) -> b.getOperationCount() - a.getOperationCount()).
-						collect(Collectors.toList());
-				
-				levelCount = levelNode.size();
-				if (depth == 0)
-					fileWriter.write("\r\nAll Crash Console : ");
-				else
-					fileWriter.write("\r\n\r\nOperationStack Depth: " + depth);
+					int levelCount = levelNode.size();
+					int depth = 0;
 
-				while(levelCount != 0){
+					while (!levelNode.isEmpty()) {
 
-					CallstackTree node = levelNode.remove(0);
+						levelNode = levelNode.parallelStream()
+								.sorted((a, b) -> b.getOperationCount() - a.getOperationCount())
+								.collect(Collectors.toList());
 
-					if (depth == 0){
-						//if (node.getOperation().toLowerCase().startsWith(targetConsole)){
-							fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + "\tVersion: " + node.getOperation());
-							
-							levelNode.addAll(node.getChildTree().values());
-						//}
-					}else{
-						if (desiredOperation(node, crashThreshold, targetConsole)){
-							fileWriter.write(buildOutputMessage(node, depth));
+						levelCount = levelNode.size();
+						if (depth == 0)
+							fileWriter.write("\r\nAll Crash Console : ");
+						else
+							fileWriter.write("\r\n\r\nOperationStack Depth: " + depth);
 
-							levelNode.addAll(node.getChildTree().values());
+						while (levelCount != 0) {
+
+							CallstackTree node = levelNode.remove(0);
+
+							if (depth == 0) {
+								fileWriter.write("\r\n\tCrash Count: " + node.getOperationCount() + "\tVersion: " + node.getOperation());
+
+								levelNode.addAll(node.getChildTree().values());
+							} else {
+								if (desiredOperation(node, crashThreshold, targetConsole)) {
+									fileWriter.write(buildOutputMessage(node, depth));
+
+									levelNode.addAll(node.getChildTree().values());
+								}
+							}
+
+							--levelCount;
+						}
+						if (depth == 0)
+							fileWriter.write("\r\n\r\n" + targetConsole + " details: ");
+
+						++depth;
+					}
+
+				} catch (IOException e) {
+					SystemMonitorException.logException(Thread.currentThread(),	e, e.getMessage());
+				} finally {
+					if (fileWriter != null) {
+						try {
+							fileWriter.close();
+						} catch (IOException e) {
+							SystemMonitorException.logException(Thread.currentThread(), e, e.getMessage());
 						}
 					}
-					
-					--levelCount;
-				}
-				if (depth == 0)
-					fileWriter.write("\r\n\r\n" + targetConsole + " details: ");
-				
-				++depth;
-			}
-		} catch (IOException e) {
-			SystemMonitorException.logException(Thread.currentThread(), e, e.getMessage());
-		} finally{
-			if (fileWriter != null){
-				try {
-					fileWriter.close();
-				} catch (IOException e) {
-					SystemMonitorException.logException(Thread.currentThread(), e, e.getMessage());
 				}
 			}
 		}
+	}
+
+	private BufferedWriter getWriter(String statisticFilePath,
+			String targetConsole, String version) throws IOException {
+		
+		String outputFileName = statisticFilePath + "_" + targetConsole + "_" + version + ".txt";
+		return new BufferedWriter(new FileWriter(outputFileName));
 	}
 
 	private boolean desiredOperation(CallstackTree node, int crashThreshold, String targetConsole) {
@@ -136,19 +154,6 @@ public class CallstackAnalyzer {
 		targetString = targetString.substring(targetString.indexOf(";") + 1);
 		return node.getOperationCount() >= crashThreshold && targetString.startsWith(targetConsole);
 	}
-
-//	private String buildOutputMessage(CallstackTree node) {
-//		String msg = node.getOperation();
-//		String crashConsole = msg.substring(0, msg.indexOf(";"));
-//		String operation = msg.substring(msg.indexOf(";") + 1);
-//
-//		StringBuilder ret = new StringBuilder();
-//		ret.append("\r\n\tCrash Count: " + node.getOperationCount());
-//		ret.append("\tCrash Console: " + crashConsole);
-//		ret.append("\tOperations: " + operation);
-//
-//		return ret.toString();
-//	}
 	
 	private String buildOutputMessage(CallstackTree node, int depth) {
 		String msg = node.getOperation();
@@ -175,10 +180,11 @@ public class CallstackAnalyzer {
 		orderedTree.stream().forEach(e -> levelNode.add(e.getValue()));
 	}
 
-	private List<Entry<String, CallstackTree>> order(HashMap<String, CallstackTree> childTree) {
+	private List<Entry<String, CallstackTree>> order(HashMap<String, CallstackTree> childTree, String targetVersion) {
 		List<Entry<String, CallstackTree>> ret = new ArrayList<Entry<String, CallstackTree>>(childTree.entrySet());
 		
 		return ret.parallelStream().
+				filter(e -> e.getKey().contains(targetVersion)).
 				sorted((a,b) -> b.getValue().getOperationCount() - a.getValue().getOperationCount()).
 				collect(Collectors.toList());
 	}

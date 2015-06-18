@@ -6,7 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /*
@@ -105,11 +108,11 @@ public class ConfigHelper {
 		return Integer.parseInt(this.filePathMap.get("crash_threshold"));
 	}
 	
-	public String getTargetConsole(){
-		return this.filePathMap.get("target_console");
+	public List<String> getTargetConsole(){
+		return Arrays.asList(this.filePathMap.get("target_console").split(","));
 	}
 
-	public String getTargetVersion() {
-		return this.filePathMap.get("target_version");
+	public List<String> getTargetVersion() {
+		return Arrays.asList(this.filePathMap.get("target_version").split(","));
 	}
 }

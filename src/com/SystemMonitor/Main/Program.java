@@ -2,6 +2,7 @@ package com.SystemMonitor.Main;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 import com.SystemMonitor.Algorithm.CallstackAnalyzer;
 import com.SystemMonitor.Algorithm.FPGrowth;
@@ -23,27 +24,28 @@ public class Program {
 //			csvParser.filterTargetJobByType("D&M");
 //			System.out.println("filter done");
 
-			csvParser.parseCSV_singlethread();
-			System.out.println("parse finished");
+//			csvParser.parseCSV_singlethread();
+//			System.out.println("parse finished");
 
 //			crashFromFPGrowth(config.getCrashDetailPath());
 //			System.out.println("FPGrowth statistics finished");
 			
-			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath(), config.getCrashThreshold(), config.getTargetConsole());
+			crashFromPrefixTree(config.getCrashDetailPath(), config.getStatisticFilePath(), config.getCrashThreshold(), 
+					config.getTargetConsole(), config.getTargetVersion());
 			System.out.println("prefix tree statistic finished");
 
-			new LogIndexer(logFilePath, config.getIndexLocation(), csvParser).index();
-			System.out.println("index finished");
+//			new LogIndexer(logFilePath, config.getIndexLocation(), csvParser).index();
+//			System.out.println("index finished");
 			
 		}catch(Exception e){
 			SystemMonitorException.logException(Thread.currentThread(), e);
 		}
 	}
 
-	private static void crashFromPrefixTree(String crashDetailPath, String statisticFile, int crashThreshold, String targetConsole) {
-		CallstackAnalyzer analyzer = new CallstackAnalyzer();
+	private static void crashFromPrefixTree(String crashDetailPath, String statisticFilePath, int crashThreshold, List<String> targetConsoles, List<String> targetVersions) {
+		CallstackAnalyzer analyzer = new CallstackAnalyzer(targetVersions);
 		analyzer.buildTree(crashDetailPath);
-		analyzer.printResult(statisticFile, crashThreshold, targetConsole);
+		analyzer.printResult(statisticFilePath, crashThreshold, targetConsoles);
 	}
 
 	private static void crashFromFPGrowth(String crashDetailPath) {
